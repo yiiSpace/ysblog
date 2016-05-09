@@ -10,6 +10,8 @@ use yii\widgets\ListView;
 
 $this->title = 'Entries';
 $this->params['breadcrumbs'][] = $this->title;
+// TODO 临时看下分页效果
+$dataProvider->pagination->setPageSize(1) ;
 ?>
 <div class="entry-index">
 

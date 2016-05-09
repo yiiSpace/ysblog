@@ -59,6 +59,19 @@ class Entry extends \yii\db\ActiveRecord
     const STATUS_DRAFT = 1;
 
     /**
+     * available status choices
+     *
+     * @return array
+     */
+    public static function getStatusOptions()
+    {
+        return [
+            static::STATUS_DRAFT => 'DRAFT',
+            static::STATUS_PUBLIC => 'PUBLIC' ,
+        ];
+    }
+
+    /**
      * @return $this
      */
     public function getTags()
