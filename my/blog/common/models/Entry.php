@@ -3,6 +3,7 @@
 namespace my\blog\common\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "entry".
@@ -31,7 +32,8 @@ class Entry extends \yii\db\ActiveRecord
     {
         return [
             [['body'], 'string'],
-            [['created_at', 'updated_at'], 'required'],
+            // [['created_at', 'updated_at'], 'required'],
+             [['title'], 'required'],
             [['created_at', 'updated_at'], 'integer'],
             [['title', 'slug'], 'string', 'max' => 100],
             [['slug'], 'unique'],
@@ -61,7 +63,19 @@ class Entry extends \yii\db\ActiveRecord
      */
     public function getTags()
     {
-        return $this->hasMany(Tag::className(),['id'=>'tag_id'])
-            ->viaTable('{{entry_tag}}',['entry_id'=>'id']);
+        return $this->hasMany(Tag::className(), ['id' => 'tag_id'])
+            ->viaTable('{{entry_tag}}', ['entry_id' => 'id']);
+    }
+
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => TimestampBehavior::className(),
+                'createdAtAttribute' => 'created_at',
+                'updatedAtAttribute' => 'updated_at',
+                // 'value' => new Expression('NOW()'),
+            ],
+        ];
     }
 }
