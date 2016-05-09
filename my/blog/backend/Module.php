@@ -20,5 +20,17 @@ class Module extends \yii\base\Module
         parent::init();
 
         // custom initialization code goes here
+        $this->initSidebar() ;
+
+    }
+
+    /**
+     * 添加导航
+     */
+    public function initSidebar()
+    {
+        \Yii::$app->view->beginBlock('sidebar');
+        echo 'hi  from ' ;
+        \Yii::$app->view->endBlock() ;
     }
 }

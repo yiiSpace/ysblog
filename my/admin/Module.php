@@ -8,6 +8,12 @@ namespace my\admin;
 class Module extends \yii\base\Module
 {
     /**
+     * @todo 此处应该为后台模块定制专门的布局 比如使用比较出名的 adminlite 模板
+     *
+     * @var string
+     */
+    public $layout = '@app/views/layouts/column2' ;
+    /**
      * @inheritdoc
      */
     public $controllerNamespace = 'my\admin\controllers';
