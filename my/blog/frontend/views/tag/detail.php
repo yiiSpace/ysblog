@@ -1,9 +1,25 @@
 <?php
-/* @var $this yii\web\View */
-?>
-<h1>tag/detail</h1>
 
-<p>
-    You may change the content of this page by modifying
-    the file <code><?= __FILE__; ?></code>.
-</p>
+use yii\helpers\Html;
+use yii\widgets\DetailView;
+
+/* @var $this yii\web\View */
+/* @var $model my\blog\common\models\Tag */
+
+$this->title = $model->title;
+$this->params['breadcrumbs'][] = ['label' => 'Tags', 'url' => ['index']];
+$this->params['breadcrumbs'][] = $this->title;
+?>
+<div class="tag-view">
+
+    <h1><?= Html::encode($this->title) ?></h1>
+
+    <?= \yii\widgets\ListView::widget([
+        'dataProvider' => $dataProvider,
+        'itemOptions' => ['class' => 'item'],
+        'itemView' => function ($model, $key, $index, $widget) {
+            return Html::a(Html::encode($model->title), ['entry/view', 'id' => $model->id]);
+        },
+    ]) ?>
+
+</div>

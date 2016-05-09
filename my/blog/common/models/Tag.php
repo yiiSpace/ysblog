@@ -3,6 +3,7 @@
 namespace my\blog\common\models;
 
 use Yii;
+use yii\db\ActiveQuery;
 
 /**
  * This is the model class for table "tag".
@@ -42,5 +43,14 @@ class Tag extends \yii\db\ActiveRecord
             'title' => 'Title',
             'slug' => 'Slug',
         ];
+    }
+
+    /**
+     * @return ActiveQuery
+     */
+    public function getEntries()
+    {
+        return $this->hasMany(Entry::className(), ['id' => 'entry_id'])
+            ->viaTable('{{entry_tag}}', ['tag_id' => 'id']);
     }
 }

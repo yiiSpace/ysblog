@@ -1,9 +1,26 @@
 <?php
-/* @var $this yii\web\View */
-?>
-<h1>tag/index</h1>
 
-<p>
-    You may change the content of this page by modifying
-    the file <code><?= __FILE__; ?></code>.
-</p>
+use yii\helpers\Html;
+use yii\widgets\ListView;
+
+/* @var $this yii\web\View */
+/* @var $searchModel my\blog\common\models\TagSearch */
+/* @var $dataProvider yii\data\ActiveDataProvider */
+
+$this->title = 'Tags';
+$this->params['breadcrumbs'][] = $this->title;
+?>
+<div class="tag-index">
+
+    <h1><?= Html::encode($this->title) ?></h1>
+    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
+
+    <?= ListView::widget([
+        'dataProvider' => $dataProvider,
+        'itemOptions' => ['class' => 'item'],
+        'itemView' => function ($model, $key, $index, $widget) {
+            // return Html::a(Html::encode($model->title), ['view', 'id' => $model->id]);
+            return Html::a(Html::encode($model->title), ['detail', 'slug' => $model->slug]);
+        },
+    ]) ?>
+</div>
