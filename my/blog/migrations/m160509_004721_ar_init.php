@@ -29,6 +29,9 @@ class m160509_004721_ar_init extends Migration
 
     public function down()
     {
+        // 阻止回滚 不然 会删掉生成的模型文件的 如果使用GiiAnt 扩展 这里倒是无防
+        return false ;
+
         $modelFiles = [
            '@my\blog\common\models\Tag.php',
            '@my\blog\common\models\Entry.php' ,
