@@ -39,7 +39,7 @@ class EntrySearch extends Entry
      *
      * @return ActiveDataProvider
      */
-    public function search($params)
+    public function search($params, $formName = null)
     {
         $query = Entry::find();
 
@@ -49,7 +49,7 @@ class EntrySearch extends Entry
             'query' => $query,
         ]);
 
-        $this->load($params);
+        $this->load($params, $formName);
 
         if (!$this->validate()) {
             // uncomment the following line if you do not want to return any records when validation fails

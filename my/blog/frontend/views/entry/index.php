@@ -24,3 +24,17 @@ $this->params['breadcrumbs'][] = $this->title;
         },
     ]) ?>
 </div>
+
+<?php $this->beginBlock('sidebar') ?>
+
+<form class="form-inline well" method="get" role="form">
+    <div class="input-group">
+        <input class="form-control input-xs" name="q"
+               placeholder="Search..." value="<?= Yii::$app->request->get('q','') ?>" />
+<span class="input-group-btn">
+<button class="btn btn-default" type="submit">Go</button>
+</span>
+    </div>
+</form>
+
+<?php $this->endBlock() ?>

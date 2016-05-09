@@ -3,7 +3,7 @@
 namespace my\blog\frontend\controllers;
 
 use my\blog\common\models\Entry;
-use Yii ;
+use Yii;
 use my\blog\common\models\EntrySearch;
 
 class EntryController extends \yii\web\Controller
@@ -20,7 +20,16 @@ class EntryController extends \yii\web\Controller
     public function actionIndex()
     {
         $searchModel = new EntrySearch();
+
+        $request = Yii::$app->request;
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        $query = $dataProvider->query;
+        if ($search = $request->get('q')) {
+            $query
+                ->andFilterWhere(['like', 'title', $search])
+                ->orFilterWhere(['like', 'slug', $search]);
+        }
 
         return $this->render('index', [
             'searchModel' => $searchModel,
