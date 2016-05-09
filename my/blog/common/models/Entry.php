@@ -55,4 +55,13 @@ class Entry extends \yii\db\ActiveRecord
 
     const STATUS_PUBLIC = 0;
     const STATUS_DRAFT = 1;
+
+    /**
+     * @return $this
+     */
+    public function getTags()
+    {
+        return $this->hasMany(Tag::className(),['id'=>'tag_id'])
+            ->viaTable('{{entry_tag}}',['entry_id'=>'id']);
+    }
 }
