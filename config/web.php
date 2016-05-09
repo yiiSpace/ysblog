@@ -6,8 +6,8 @@ $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
-    'aliases'=>[
-        '@my'=>'@app/my'
+    'aliases' => [
+        '@my' => '@app/my'
     ],
     'components' => [
         'request' => [
@@ -54,6 +54,11 @@ $config = [
     'modules' => [
         'admin' => [
             'class' => 'my\admin\Module',
+            'modules' => [
+                'blog' => [
+                    'class' => 'my\blog\backend\Module',
+                ],
+            ]
         ],
         'blog' => [
             'class' => 'my\blog\frontend\Module',
