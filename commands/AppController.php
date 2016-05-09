@@ -30,7 +30,7 @@ class AppController extends Controller
     {
         Console::output("App setup begin ");
         // $this->runAction('set-writable', ['interactive' => $this->interactive]);
-
+        // TODO 此处可以运行不同的命令 这些命令可以通过bootstrap过程挂接进来 然后统一运行 这样各个模块的启动任务都可以完成了
         \Yii::$app->runAction('migrate/up', [
             'interactive' => $this->interactive,
             'migrationPath'=>'@my/blog/migrations',

@@ -17,10 +17,11 @@ class m160509_003118_entry_tag_init extends Migration
 
         $tableName = $this->tableName ;
         $this->createTable($tableName, [
-            'tag_id'=>  $this->primaryKey(),
-            'entry_id'=> $this->primaryKey(),
+            'tag_id'=>  $this->integer(),
+            'entry_id'=> $this->integer(),
 
         ]);
+        $this->addPrimaryKey('pk_entry_tag',$tableName,['tag_id','entry_id']);
     }
 
     public function down()
