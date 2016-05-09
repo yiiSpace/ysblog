@@ -78,3 +78,5 @@
 
 yii中要这样做也很容易 因为 view对象有block 变量 可以承载这些block 然后 在布局中预定义这些block
 在视图或者控制器|action widget中传递block 就可以了。
+
+还有一个方法是用view::params 传递数据块。 全局静态变量也可以但总感觉不那么“自然”

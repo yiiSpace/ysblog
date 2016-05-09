@@ -15,6 +15,7 @@ $this->beginContent(__DIR__.'/_main.php')
             <?= $content ?>
         </div>
         <div class="col-md-3">
+<!--            The block tags are used to indicate overrideable areas of the page.-->
             {% block sidebar %}
             <ul class="well nav nav-stacked">
                 <li><a href="#">Sidebar item</a></li>
