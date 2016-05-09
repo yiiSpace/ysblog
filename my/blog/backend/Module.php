@@ -29,8 +29,11 @@ class Module extends \yii\base\Module
      */
     public function initSidebar()
     {
-        \Yii::$app->view->beginBlock('sidebar');
-        echo 'hi  from ' ;
-        \Yii::$app->view->endBlock() ;
+        $view  =  \Yii::$app->view ;
+        $view->beginBlock('sidebar');
+
+        echo $view->render('@my/blog/backend/views/_sidebar/sidebar');
+
+        $view->endBlock() ;
     }
 }

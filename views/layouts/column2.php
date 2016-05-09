@@ -5,7 +5,7 @@ use yii\widgets\Breadcrumbs;
 /* @var $this \yii\web\View */
 /* @var $content string */
 
-$this->beginContent(__DIR__.'/_main.php')
+$this->beginContent(__DIR__ . '/_main.php')
 ?>
 
 
@@ -15,11 +15,9 @@ $this->beginContent(__DIR__.'/_main.php')
             <?= $content ?>
         </div>
         <div class="col-md-3">
-<!--            The block tags are used to indicate overrideable areas of the page.-->
+            <!--            The block tags are used to indicate overrideable areas of the page.-->
             {% block sidebar %}
-            <ul class="well nav nav-stacked">
-                <li><a href="#">Sidebar item</a></li>
-            </ul>
+            <!--            <ul class="well nav nav-stacked">    <li><a href="#">Sidebar item</a></li>             </ul>-->
             {% endblock %}
             <?= $this->blocks['sidebar'] ?>
         </div>
