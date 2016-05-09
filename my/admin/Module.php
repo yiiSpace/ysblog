@@ -12,7 +12,7 @@ class Module extends \yii\base\Module
      *
      * @var string
      */
-    public $layout = '@app/views/layouts/column2' ;
+    public $layout =  'column2' ; // '@app/views/layouts/column2' ;
     /**
      * @inheritdoc
      */
