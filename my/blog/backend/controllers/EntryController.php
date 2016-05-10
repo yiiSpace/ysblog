@@ -66,6 +66,9 @@ class EntryController extends Controller
         $model = new Entry();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+
+            Yii::$app->session->setFlash('success', sprintf('entry %s 成功创建 !', $model->title));
+
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [
@@ -85,7 +88,9 @@ class EntryController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+
             Yii::$app->session->setFlash('success', "修改成功!");
+
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('update', [
@@ -102,7 +107,9 @@ class EntryController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+        $model->delete();
+        Yii::$app->session->setFlash('success', sprintf('entry %s 成功删除 !', $model->title));
 
         return $this->redirect(['index']);
     }
