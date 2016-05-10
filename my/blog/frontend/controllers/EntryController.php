@@ -25,6 +25,12 @@ class EntryController extends \yii\web\Controller
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         $query = $dataProvider->query;
+
+        $validateStatuses = [Entry::STATUS_PUBLIC , Entry::STATUS_DRAFT] ;
+        $query->andWhere([
+            'status'=>$validateStatuses ,
+        ]);
+
         if ($search = $request->get('q')) {
             $query
                 ->andFilterWhere(['like', 'title', $search])

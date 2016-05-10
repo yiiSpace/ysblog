@@ -33,7 +33,7 @@ class Entry extends \yii\db\ActiveRecord
         return [
             [['body'], 'string'],
             // [['created_at', 'updated_at'], 'required'],
-             [['title'], 'required'],
+            [['title', 'body'], 'required'],
             [['created_at', 'updated_at'], 'integer'],
             [['title', 'slug'], 'string', 'max' => 100],
             [['slug'], 'unique'],
@@ -57,9 +57,11 @@ class Entry extends \yii\db\ActiveRecord
 
     const STATUS_PUBLIC = 0;
     const STATUS_DRAFT = 1;
+    const STATUS_DELETED = 2;
 
     /**
      * available status choices
+     * 此方法别名可以是 getStatusChoices  ? 这个看起来怎么样 ^_^
      *
      * @return array
      */
@@ -67,7 +69,8 @@ class Entry extends \yii\db\ActiveRecord
     {
         return [
             static::STATUS_DRAFT => 'DRAFT',
-            static::STATUS_PUBLIC => 'PUBLIC' ,
+            static::STATUS_PUBLIC => 'PUBLIC',
+            static::STATUS_DELETED => 'DELETED',
         ];
     }
 
