@@ -10,7 +10,8 @@ $config = [
         'my\blog\frontend\Bootstrap',
     ],
     'aliases' => [
-        '@my' => '@app/my'
+        '@my' => '@app/my',
+        '@common' => '@app/common',
     ],
     'components' => [
         'request' => [

@@ -11,7 +11,8 @@ $config = [
     'bootstrap' => ['log'],
     'controllerNamespace' => 'app\commands',
     'aliases'=>[
-        '@my'=>'@app/my'
+        '@my'=>'@app/my',
+        '@common' => '@app/common',
     ],
     'components' => [
         'cache' => [

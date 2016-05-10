@@ -65,7 +65,7 @@ AppAsset::register($this);
         <?= Breadcrumbs::widget([
             'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
         ]) ?>
-        <?= \my\fof\widgets\Alert::widget() ?>
+        <?= \common\widgets\Alert::widget() ?>
         <?= $content ?>
     </div>
 </div>
