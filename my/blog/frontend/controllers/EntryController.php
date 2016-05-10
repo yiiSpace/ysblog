@@ -50,8 +50,13 @@ class EntryController extends \yii\web\Controller
      */
     public function actionView($id)
     {
+        // FIXME 这里最好改造下findModel函数 允许传入额外的条件 或者query
+        $model = $this->findModel($id) ;
+        if($model->status == Entry::STATUS_DELETED){
+            throw new NotFoundHttpException('The requested page does not exist.');
+        }
         return $this->render('view', [
-            'model' => $this->findModel($id),
+            'model' => $model,
         ]);
     }
 

@@ -85,6 +85,7 @@ class EntryController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            Yii::$app->session->setFlash('success', "修改成功!");
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('update', [
