@@ -28,7 +28,8 @@ class Entry extends \yii\db\ActiveRecord
     /**
      * @var string
      */
-    public $tag_text  = '' ;
+    public $tag_text = '';
+
     /**
      * @inheritdoc
      */
@@ -36,13 +37,16 @@ class Entry extends \yii\db\ActiveRecord
     {
         return [
             [['body'], 'string'],
-            // 从yii1 拷贝过来的
-            [['tag_text'], 'match','pattern'=>'/^[\w\s,]+$/', 'message'=>'Tags can only contain word characters.'],
+            // 从yii1 拷贝过来的 fixme 汉语tag支持有问题！
+            [['tag_text'], 'match',
+                'pattern' => '/^[\w\s,]+$/u', 'message' => 'Tags can only contain word characters.'],
             // [['created_at', 'updated_at'], 'required'],
             [['title', 'body'], 'required'],
             [['created_at', 'updated_at'], 'integer'],
             [['title', 'slug'], 'string', 'max' => 100],
             [['slug'], 'unique'],
+
+            [['status'], 'default', 'value' => static::STATUS_DRAFT],
         ];
     }
 
@@ -105,14 +109,36 @@ class Entry extends \yii\db\ActiveRecord
     public function afterFind()
     {
         parent::afterFind();
+    }
 
-        // 填充tag 文本  todo 这里有bug  应该在验证逻辑里面写 或者独立加载
-        $this->tag_text = '' ;
-        if(!empty($this->tags)){
-            $tagTitles = array_map(function($tagModel){
-              return $tagModel->title ;
-            },$this->tags);
-            $this->tag_text =  implode(', ',$tagTitles);
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+        // 更新tag关系
+        if ($insert) {
+
+        } else {
+            // 移除tag关系
+            // $this->unlinkAll('tags') ;
+            $sql = <<<SQL
+        DELETE
+        FROM {{entry_tag}}
+        WHERE    entry_id = :entry_id;
+SQL;
+
+            $cmd = Yii::$app->db->createCommand($sql, [':entry_id' => $this->primaryKey]);
+            $cmd->execute();
+        }
+
+        $newTags = Tag::string2array($this->tag_text);
+        Tag::addTags(array_values($newTags));
+        $tagModels = Tag::find()
+            ->where([
+                'title' => $newTags,
+            ])
+            ->all();
+        foreach ($tagModels as $tagModel) {
+            $this->link('tags', $tagModel);
         }
 
     }
@@ -120,8 +146,15 @@ class Entry extends \yii\db\ActiveRecord
     /**
      * Normalizes the user-entered tags.
      */
-    public function normalizeTags($attribute,$params)
+    public function loadTagText()
     {
-        $this->tags=Tag::array2string(array_unique(Tag::string2array($this->tags)));
+
+        $this->tag_text = '';
+        if (!empty($this->tags)) {
+            $tagTitles = array_map(function ($tagModel) {
+                return $tagModel->title;
+            }, $this->tags);
+            $this->tag_text = implode(', ', $tagTitles);
+        }
     }
 }

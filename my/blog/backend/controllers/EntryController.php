@@ -93,6 +93,8 @@ class EntryController extends Controller
 
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
+            $model->loadTagText() ;
+
             return $this->render('update', [
                 'model' => $model,
             ]);

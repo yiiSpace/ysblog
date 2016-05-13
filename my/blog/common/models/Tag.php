@@ -133,24 +133,26 @@ class Tag extends \yii\db\ActiveRecord
      * @param $oldTags
      * @param $newTags
      */
-    public function updateFrequency($oldTags, $newTags)
+    public static function updateFrequency($oldTags, $newTags)
     {
         $oldTags = self::string2array($oldTags);
         $newTags = self::string2array($newTags);
-        $this->addTags(array_values(array_diff($newTags, $oldTags)));
-        $this->removeTags(array_values(array_diff($oldTags, $newTags)));
+        static::addTags(array_values(array_diff($newTags, $oldTags)));
+        static::removeTags(array_values(array_diff($oldTags, $newTags)));
     }
 
     /**
      * @param $tags
+     * @return array
      */
-    public function addTags($tags)
+    public static function addTags($tags)
     {
         /*
         $criteria=new CDbCriteria;
         $criteria->addInCondition('name',$tags);
         $this->updateCounters(array('frequency'=>1),$criteria);
         */
+        $addedTags = [] ;
         foreach ($tags as $name) {
             $query = static::find();
             $query->where([
@@ -161,11 +163,14 @@ class Tag extends \yii\db\ActiveRecord
                 $tag->title = $name;
                 // $tag->frequency=1; # 后续实现词频功能
                 $tag->save();
+                // 推入数组
+                $addedTags[] = $tag ;
             }
         }
+        return $addedTags ;
     }
 
-    public function removeTags($tags)
+    public static function removeTags($tags)
     {
         /*
         if (empty($tags))
