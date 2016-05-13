@@ -20,6 +20,8 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'status')->dropDownList($model->getStatusOptions()) ?>
 
+    <?= $form->field($model, 'tag_text')->textInput([]) ?>
+
     <?php // $form->field($model, 'created_at')->textInput() ?>
 
     <?php // $form->field($model, 'updated_at')->textInput() ?>

@@ -26,12 +26,18 @@ class Entry extends \yii\db\ActiveRecord
     }
 
     /**
+     * @var string
+     */
+    public $tag_text  = '' ;
+    /**
      * @inheritdoc
      */
     public function rules()
     {
         return [
             [['body'], 'string'],
+            // 从yii1 拷贝过来的
+            [['tag_text'], 'match','pattern'=>'/^[\w\s,]+$/', 'message'=>'Tags can only contain word characters.'],
             // [['created_at', 'updated_at'], 'required'],
             [['title', 'body'], 'required'],
             [['created_at', 'updated_at'], 'integer'],
@@ -50,6 +56,7 @@ class Entry extends \yii\db\ActiveRecord
             'title' => 'Title',
             'slug' => 'Slug',
             'body' => 'Body',
+            'tag_text' => 'tags',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];
@@ -93,5 +100,28 @@ class Entry extends \yii\db\ActiveRecord
                 // 'value' => new Expression('NOW()'),
             ],
         ];
+    }
+
+    public function afterFind()
+    {
+        parent::afterFind();
+
+        // 填充tag 文本  todo 这里有bug  应该在验证逻辑里面写 或者独立加载
+        $this->tag_text = '' ;
+        if(!empty($this->tags)){
+            $tagTitles = array_map(function($tagModel){
+              return $tagModel->title ;
+            },$this->tags);
+            $this->tag_text =  implode(', ',$tagTitles);
+        }
+
+    }
+
+    /**
+     * Normalizes the user-entered tags.
+     */
+    public function normalizeTags($attribute,$params)
+    {
+        $this->tags=Tag::array2string(array_unique(Tag::string2array($this->tags)));
     }
 }
