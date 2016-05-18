@@ -19,8 +19,10 @@ class TagController extends \yii\web\Controller
      */
     public function actionDetail($slug = '')
     {
+
         /** @var Tag $model * */
-        if (($model = Tag::findOne(['slug' => $slug,])) !== null) {
+        $model = Tag::find()->where([ 'OR',[ 'slug' => $slug,],['title'=>$slug]])->one();
+        if ($model !== null) {
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }

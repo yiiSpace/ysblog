@@ -45,7 +45,10 @@ $this->params['breadcrumbs'][] = $this->title;
         <li><h4>Tags</h4></li>
         <?php foreach ($model->tags as $tag): ?>
             <li>
-                <?= Html::a($tag->title, ['tag/detail', 'slug' => $tag->slug]) ?>
+                <?= Html::a($tag->title, ['tag/detail',
+                    // 'slug' => ( $tag->slug ? $tag->title : $tag->slug
+                    'slug' => $tag->title]
+                ) ?>
             </li>
         <?php endforeach ?>
     </ul>
