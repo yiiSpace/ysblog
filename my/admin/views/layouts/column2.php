@@ -5,7 +5,8 @@ use yii\widgets\Breadcrumbs;
 /* @var $this \yii\web\View */
 /* @var $content string */
 
-$this->beginContent(  '@app/views/layouts/_main.php')
+// $this->beginContent(  '@app/views/layouts/_main.php')
+$this->beginContent( __DIR__ .  '/main.php')
 ?>
 <?= \yii\bootstrap\Nav::widget([
 
