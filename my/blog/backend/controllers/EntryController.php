@@ -54,7 +54,7 @@ class EntryController extends Controller
      */
     public function actionView($id)
     {
-       //  Entry::find()->createCommand()->rawSql ;
+        //  Entry::find()->createCommand()->rawSql ;
 
         return $this->render('view', [
             'model' => $this->findModel($id),
@@ -89,38 +89,45 @@ class EntryController extends Controller
      */
     public function actionImageUpload()
     {
-        $model = new Image() ;
+        $model = new Image();
         if ($model->load(Yii::$app->request->post())) {
             /**
              * @var \yii\web\UploadedFile
              */
-            $model->file  = UploadedFile::getInstance($model,'file') ;
+            $model->file = UploadedFile::getInstance($model, 'file');
             if ($model->validate()) {
-                $destinationPath = Yii::$app->params['uploadsDir']
-                    .'/'.date('Y-m-d').'/'
-                    .microtime(true)
-                    .'.'.$model->file->getExtension() ;
+                // 相对路径
+                $relativePath = '/' . date('Y-m-d') . '/'
+                    . microtime(true)
+                    . '.' . $model->file->getExtension();
+                // 目标路径 带别名的路径
+                $destinationPath = Yii::$app->params['uploadsDir'] . $relativePath;
 
-                $destinationPath = Yii::getAlias($destinationPath) ;
+                // 别名计算出真正的路径
+                $destinationPath = Yii::getAlias($destinationPath);
+                // 目标文件的所在目录
                 $destinationDir = dirname($destinationPath);
-                if(!is_dir($destinationDir)){
-                    mkdir($destinationDir,0777,true) ;
+                // 如果不存在则创建目录
+                if (!is_dir($destinationDir)) {
+                    mkdir($destinationDir, 0777, true);
                 }
+                // 上传保存文件 参二默认是true值会删掉当前上传的文件的
                 $model->file->saveAs($destinationPath);
 
                 $img = Html::img('data:image/gif;base64,' . base64_encode(file_get_contents($destinationPath)), ['width' => '300px']);
 
                 // 删除掉所上传的文件
                 // 轻轻的我走了正如我轻轻的来 挥一挥手 不留下一点垃圾！
+                // unlink($destinationPath ) ;
 
-                $result = '上传的图片： ' . $img . '<br/>上传成功 文件已被删除了';
+                $result = '上传的图片： ' . $img . '<br/>上传成功 路径[[' . Yii::getAlias('@web' . $relativePath) . ']]';
             }
         }
 
-         return $this->render('image-upload',[
-            'model'=>$model ,
-             'result'=>$result ,
-         ]);
+        return $this->render('image-upload', [
+            'model' => $model,
+            'result' => $result,
+        ]);
     }
 
     /**
@@ -139,7 +146,7 @@ class EntryController extends Controller
 
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
-            $model->loadTagText() ;
+            $model->loadTagText();
 
             return $this->render('update', [
                 'model' => $model,
