@@ -22,10 +22,13 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?= $form->field($model, 'file')->fileInput([
 
-    ])?>
+    ]) ?>
 
     <div class="form-group">
-        <?= Html::submitButton('Create' , ['class' => 'btn btn-success']) ?>
+        <?= Html::submitButton('Create', ['class' => 'btn btn-success']) ?>
+        <?php if (!empty($result)): ?>
+        <?= $result ?>
+        <?php endif ?>
     </div>
 
     <?php ActiveForm::end(); ?>
