@@ -2,12 +2,14 @@
 
 namespace my\blog\backend\controllers;
 
+use my\blog\common\models\forms\Image;
 use Yii;
 use my\blog\common\models\Entry;
 use my\blog\common\models\EntrySearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\web\UploadedFile;
 
 /**
  * EntryController implements the CRUD actions for Entry model.
@@ -77,6 +79,40 @@ class EntryController extends Controller
                 'model' => $model,
             ]);
         }
+    }
+
+    /**
+     * 处理文件上传
+     *
+     * @return string
+     */
+    public function actionImageUpload()
+    {
+        $model = new Image() ;
+        if ($model->load(Yii::$app->request->post())) {
+            /**
+             * @var \yii\web\UploadedFile
+             */
+            $model->file  = UploadedFile::getInstance($model,'file') ;
+            if ($model->validate()) {
+                $destinationPath = Yii::$app->params['uploadsDir']
+                    .'/'.date('Y-m-d').'/'
+                    .microtime(true)
+                    .'.'.$model->file->getExtension() ;
+
+                $destinationPath = Yii::getAlias($destinationPath) ;
+                $destinationDir = dirname($destinationPath);
+                if(!is_dir($destinationDir)){
+                    mkdir($destinationDir,0777,true) ;
+                }
+                $model->file->saveAs($destinationPath);
+                return 'ok' ;
+            }
+        }
+
+         return $this->render('image-upload',[
+            'model'=>$model ,
+         ]);
     }
 
     /**

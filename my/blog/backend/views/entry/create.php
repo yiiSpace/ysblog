@@ -14,8 +14,10 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <h1><?= Html::encode($this->title) ?></h1>
 
+    <?= Html::a('上传图片',['image-upload']) ?>
     <?= $this->render('_form', [
         'model' => $model,
     ]) ?>
+
 
 </div>

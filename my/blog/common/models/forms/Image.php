@@ -24,10 +24,12 @@ class Image extends Model
      */
     public function rules()
     {
-        return [
-            // name, email, subject and body are required
-           ['file','file']
+        $rules = [];
+        //
+        $rules[] = [['file',], 'file', 'extensions' => 'jpeg,jpg, gif, png',
+            'skipOnEmpty' => false
         ];
+        return $rules;
     }
 
     /**
