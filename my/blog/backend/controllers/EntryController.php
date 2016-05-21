@@ -51,6 +51,8 @@ class EntryController extends Controller
      */
     public function actionView($id)
     {
+       //  Entry::find()->createCommand()->rawSql ;
+
         return $this->render('view', [
             'model' => $this->findModel($id),
         ]);
