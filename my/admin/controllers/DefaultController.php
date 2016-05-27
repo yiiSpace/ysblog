@@ -17,4 +17,9 @@ class DefaultController extends Controller
     {
         return $this->render('index');
     }
+
+    public function actionSysInfo()
+    {
+        return $this->render('sys-info');
+    }
 }

@@ -41,6 +41,7 @@
                         'items' => [
                             ['label' => 'Gii', 'icon' => 'fa fa-file-code-o', 'url' => ['/gii'],],
                             ['label' => 'Debug', 'icon' => 'fa fa-dashboard', 'url' => ['/debug'],],
+                            ['label' => 'sys-info', 'icon' => 'fa fa-dashboard', 'url' => ['/admin/default/sys-info'],],
                             [
                                 'label' => 'Level One',
                                 'icon' => 'fa fa-circle-o',
