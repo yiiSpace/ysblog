@@ -113,6 +113,7 @@ class EntryController extends Controller
                 }
                 // 上传保存文件 参二默认是true值会删掉当前上传的文件的
                 $model->file->saveAs($destinationPath);
+                Yii::$app->session->setFlash('success', sprintf('上传文件 %s 成功 !', basename($destinationPath)));
 
                 $img = Html::img('data:image/gif;base64,' . base64_encode(file_get_contents($destinationPath)), ['width' => '300px']);
 

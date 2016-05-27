@@ -7,6 +7,7 @@
 
 namespace app\commands;
 
+use common\helpers\console\ControllerEnhance;
 use yii\console\Controller;
 
 /**
@@ -19,6 +20,7 @@ use yii\console\Controller;
  */
 class HelloController extends Controller
 {
+    use ControllerEnhance ;
     /**
      * This command echoes what you have entered as the message.
      * @param string $message the message to be echoed.
@@ -26,5 +28,11 @@ class HelloController extends Controller
     public function actionIndex($message = 'hello world')
     {
         echo $message . "\n";
+    }
+
+    public function actionCn()
+    {
+        $this->stdoutN('di da di da di');
+        $this->stdoutBlock('di da di da di');
     }
 }

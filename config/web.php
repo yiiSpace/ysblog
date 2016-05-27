@@ -31,7 +31,10 @@ $config = [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'app\models\User',
+
+            'class' => 'amnah\yii2\user\components\User',
+
+           // 'identityClass' => 'app\models\User',
             'enableAutoLogin' => true,
         ],
         'errorHandler' => [
@@ -43,6 +46,10 @@ $config = [
             // 'useFileTransport' to false and configure a transport
             // for the mailer to send real emails.
             'useFileTransport' => true,
+            'messageConfig' => [
+                'from' => ['admin@website.com' => 'Admin'], // this is needed for sending emails
+                'charset' => 'UTF-8',
+            ]
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
@@ -75,6 +82,14 @@ $config = [
         ],
         'blog' => [
             'class' => 'my\blog\frontend\Module',
+        ],
+        'user' => [
+            'class' => 'amnah\yii2\user\Module',
+            // set custom module properties here ..
+            'modelClasses'=> [
+                    "User" => "amnah\yii2\user\models\User"
+                ],
+
         ],
     ],
 ];
