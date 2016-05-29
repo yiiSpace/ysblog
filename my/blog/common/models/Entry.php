@@ -2,6 +2,7 @@
 
 namespace my\blog\common\models;
 
+use my\user\models\User;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 
@@ -156,5 +157,21 @@ SQL;
             }, $this->tags);
             $this->tag_text = implode(', ', $tagTitles);
         }
+    }
+
+    /**
+     * 所属关系
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getAuthor()
+    {
+        /**
+         *  因为是实例方法  所以其实是可以用$this->attributeName 来访问属性 构造一个查询的 这个给人感觉很怪的 如果这样用
+         * 明显感觉到yii使用了 多次查询的技巧 而实际上也是！:)
+         */
+        return $this->hasOne(User::className(),[
+           'user_id','id',
+        ]);
     }
 }

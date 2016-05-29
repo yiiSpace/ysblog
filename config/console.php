@@ -14,6 +14,12 @@ $config = [
         '@my'=>'@app/my',
         '@common' => '@app/common',
     ],
+    'modules' => [
+        'user' => [
+            // used to copy the user module to our own directory
+            'class' => 'amnah\yii2\user\Module',
+        ],
+    ],
     'components' => [
         'cache' => [
             'class' => 'yii\caching\FileCache',

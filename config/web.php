@@ -32,7 +32,7 @@ $config = [
         ],
         'user' => [
 
-            'class' => 'amnah\yii2\user\components\User',
+            'class' => 'my\user\components\User',
 
            // 'identityClass' => 'app\models\User',
             'enableAutoLogin' => true,
@@ -83,11 +83,15 @@ $config = [
         'blog' => [
             'class' => 'my\blog\frontend\Module',
         ],
+        'comment' => [
+            'class' => 'my\comment\Module',
+        ],
         'user' => [
-            'class' => 'amnah\yii2\user\Module',
+             'class' => 'my\user\Module',
+            // 'class' => 'amnah\yii2\user\Module',
             // set custom module properties here ..
             'modelClasses'=> [
-                    "User" => "amnah\yii2\user\models\User"
+                    "User" => "my\user\models\User"
                 ],
 
         ],
