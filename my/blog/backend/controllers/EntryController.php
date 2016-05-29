@@ -91,8 +91,8 @@ class EntryController extends Controller
         // var_dump(Yii::$app->user->getIdentity()) ;
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
 
-            // 添加关系 也可以用behavior来做
-            $model->link('author',Yii::$app->user->getIdentity()) ;
+            // 添加关系 也可以用behavior BlameableBehavior 来做 todo 在前台可以使用这种做法哦
+            $model->link('author', Yii::$app->user->getIdentity());
 
             Yii::$app->session->setFlash('success', sprintf('entry %s 成功创建 !', $model->title));
 
@@ -199,9 +199,43 @@ class EntryController extends Controller
      * @return Entry the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($id)
+    protected function findModel($id, $authorId = null)
     {
-        if (($model = Entry::findOne($id)) !== null) {
+        /**
+         * 只有作者才可以编辑和删除他们的实体 ，
+         * TODO 注意这里是后台 实际是前台才需要这种逻辑 后台是管理员 是不需要这种逻辑的
+         * +  ------------------------------------------------------------------------------  ++
+         *                                 ## 这里实现参考《learning flask》
+         * ————————————————————————————————————————————
+         *      ## only the author can edit or delete their own entries
+         *
+         * def get_entry_or_404(slug, author=None):
+         * query = Entry.query.filter(Entry.slug == slug)
+         * if author:
+         * query = query.filter(Entry.author == author)
+         * else:
+         * query = filter_status_by_user(query)
+         * return query.first_or_404()
+         *
+         * ————————————————————————————————————————————
+         */
+        $query = Entry::find();
+        $query->where([
+            'id' => $id,
+        ]);
+        /*
+        if($authorId !== null){
+           $query->andWhere([
+              'user_id'=>$authorId,
+           ]);
+        }
+        */
+        $query->filterWhere([
+            'user_id' => $authorId,
+        ]);
+        // if (($model = Entry::findOne($id)) !== null) {
+        if (($model = $query->one()) !== null) {
+
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
