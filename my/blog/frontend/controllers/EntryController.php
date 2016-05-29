@@ -5,6 +5,7 @@ namespace my\blog\frontend\controllers;
 use my\blog\common\models\Entry;
 use Yii;
 use my\blog\common\models\EntrySearch;
+use yii\db\Query;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 
@@ -59,6 +60,9 @@ class EntryController extends \yii\web\Controller
 
         $query = $dataProvider->query;
 
+        // 对作者特殊处理
+        $this->filterStatusByUser($query) ;
+
         $validateStatuses = [Entry::STATUS_PUBLIC, Entry::STATUS_DRAFT];
         $query->andWhere([
             'status' => $validateStatuses,
@@ -74,6 +78,29 @@ class EntryController extends \yii\web\Controller
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
+    }
+
+    protected function filterStatusByUser(Query $query)
+    {
+        $webUser = Yii::$app->user;
+        if($webUser->getIsGuest()){
+            $query->filterWhere([
+                'status'=>Entry::STATUS_PUBLIC,
+            ]);
+        }else{
+            # Allow user to view their own drafts.
+            $query->andWhere([
+               'status'=>Entry::STATUS_PUBLIC,
+            ]);
+            $query->orWhere([
+              'AND' , [
+                    'user_id'=>$webUser->id,
+                ],
+                [
+                    '<>','status',Entry::STATUS_DELETED
+                ]
+            ]);
+        }
     }
 
     /**
