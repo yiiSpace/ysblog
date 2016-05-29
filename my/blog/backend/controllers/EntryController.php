@@ -199,58 +199,13 @@ class EntryController extends Controller
      * @return Entry the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($id, $authorId = null)
+    protected function findModel($id)
     {
-        /**
-         * 只有作者才可以编辑和删除他们的实体 ，
-         * TODO 注意这里是后台 实际是前台才需要这种逻辑 后台是管理员 是不需要这种逻辑的
-         * +  ------------------------------------------------------------------------------  ++
-         *                                 ## 这里实现参考《learning flask》
-         * -  g 是flask全局对象 可以存放任何东西
-         *
-         * ————————————————————————————————————————————
-         *      ## only the author can edit or delete their own entries
-         *
-         * def get_entry_or_404(slug, author=None):
-         * query = Entry.query.filter(Entry.slug == slug)
-         * if author:
-         * query = query.filter(Entry.author == author)
-         * else:
-         * query = filter_status_by_user(query)
-         * return query.first_or_404()
-         *
-         * ————————————————————————————————————————————
-         * 非登陆用户只能看到状态是public的博客
-         *
-         * def filter_status_by_user(query):
-         * if not g.user.is_authenticated:
-         * return query.filter(Entry.status == Entry.STATUS_PUBLIC)
-         * else:
-         * return query.filter(
-         * Entry.status.in_((Entry.STATUS_PUBLIC,
-         * Entry.STATUS_DRAFT)))
-         * -----------------------------------------------------------------------------------------
-         */
-        $query = Entry::find();
-        $query->where([
-            'id' => $id,
-        ]);
-        /*
-        if($authorId !== null){
-           $query->andWhere([
-              'user_id'=>$authorId,
-           ]);
-        }
-        */
-        $query->filterWhere([
-            'user_id' => $authorId,
-        ]);
-        // if (($model = Entry::findOne($id)) !== null) {
-        if (($model = $query->one()) !== null) {
-
+        if (($model = Entry::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }
+
 }
