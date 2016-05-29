@@ -15,14 +15,24 @@ $this->params['breadcrumbs'][] = $this->title;
         <h1><?= Html::encode($this->title) ?></h1>
 
         <p>
-            <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-            <?= Html::a('Delete', ['delete', 'id' => $model->id], [
-                'class' => 'btn btn-danger',
-                'data' => [
-                    'confirm' => 'Are you sure you want to delete this item?',
-                    'method' => 'post',
-                ],
-            ]) ?>
+
+            <?php
+            /**
+             *  modify the entry detail template to hide the Edit and Delete links from
+             * all users except the entry's author.
+             */
+            if ($model->user_id == Yii::$app->user->id): ?>
+        <h4>Actions</h4>
+        <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a('Delete', ['delete', 'id' => $model->id], [
+            'class' => 'btn btn-danger',
+            'data' => [
+                'confirm' => 'Are you sure you want to delete this item?',
+                'method' => 'post',
+            ],
+        ]) ?>
+        <?php endif ?>
+
         </p>
 
         <?= DetailView::widget([
@@ -46,8 +56,8 @@ $this->params['breadcrumbs'][] = $this->title;
         <?php foreach ($model->tags as $tag): ?>
             <li>
                 <?= Html::a($tag->title, ['tag/detail',
-                    // 'slug' => ( $tag->slug ? $tag->title : $tag->slug
-                    'slug' => $tag->title]
+                        // 'slug' => ( $tag->slug ? $tag->title : $tag->slug
+                        'slug' => $tag->title]
                 ) ?>
             </li>
         <?php endforeach ?>
