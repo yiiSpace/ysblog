@@ -77,6 +77,54 @@ class EntryController extends \yii\web\Controller
     }
 
     /**
+     * Creates a new Entry model.
+     * If creation is successful, the browser will be redirected to the 'view' page.
+     * @return mixed
+     */
+    public function actionCreate()
+    {
+        $model = new Entry();
+
+        // var_dump(Yii::$app->user->getIdentity()) ;
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+
+            // 添加关系 也可以用behavior BlameableBehavior 来做 todo 在前台可以使用这种做法哦
+            $model->link('author', Yii::$app->user->getIdentity());
+
+            Yii::$app->session->setFlash('success', sprintf('entry %s 成功创建 !', $model->title));
+
+            return $this->redirect(['view', 'id' => $model->id]);
+        } else {
+            return $this->render('create', [
+                'model' => $model,
+            ]);
+        }
+    }
+
+    /**
+     * Updates an existing Entry model.
+     * If update is successful, the browser will be redirected to the 'view' page.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionUpdate($id)
+    {
+        $model = $this->findModel($id);
+
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+
+            Yii::$app->session->setFlash('success', "修改成功!");
+
+            return $this->redirect(['view', 'id' => $model->id]);
+        } else {
+            $model->loadTagText();
+
+            return $this->render('update', [
+                'model' => $model,
+            ]);
+        }
+    }
+    /**
      * Displays a single Entry model.
      * @param integer $id
      * @return mixed
