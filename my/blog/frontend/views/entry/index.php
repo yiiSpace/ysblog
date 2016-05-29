@@ -29,7 +29,12 @@ $dataProvider->pagination->setPageSize(1) ;
 
 <?php $this->beginBlock('sidebar') ?>
 
-<form class="form-inline well" method="get" role="form">
+<?= Html::beginForm([],'get',[
+    'class'=>'form-inline well',
+    'role'=>'form',
+]) ?>
+
+<!--<form class="form-inline well" method="get" role="form">-->
     <div class="input-group">
         <input class="form-control input-xs" name="q"
                placeholder="Search..." value="<?= Yii::$app->request->get('q','') ?>" />
@@ -37,6 +42,7 @@ $dataProvider->pagination->setPageSize(1) ;
 <button class="btn btn-default" type="submit">Go</button>
 </span>
     </div>
-</form>
+<!--</form>-->
+<?= Html::endForm() ?>
 
 <?php $this->endBlock() ?>

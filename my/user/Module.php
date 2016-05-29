@@ -5,7 +5,6 @@ namespace my\user;
 use Yii;
 use yii\base\InvalidConfigException;
 use yii\db\ActiveRecord;
-
 /**
  * User module
  *
@@ -240,8 +239,14 @@ class Module extends \yii\base\Module
      */
     public function createController($route)
     {
+        /*
+        return parent::createController($route) ;
+        // FIXME 不需要下面的蛋疼东西 累赘
+        */
         // check valid routes
-        $validRoutes  = [$this->defaultRoute, "admin", "copy", "auth"];
+        $validRoutes  = [$this->defaultRoute, "admin", "copy", "auth",
+            'public',// 还有这一出
+        ];
         $isValidRoute = false;
         foreach ($validRoutes as $validRoute) {
             if (strpos($route, $validRoute) === 0) {
