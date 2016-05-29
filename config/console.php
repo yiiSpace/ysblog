@@ -19,6 +19,9 @@ $config = [
             // used to copy the user module to our own directory
             'class' => 'amnah\yii2\user\Module',
         ],
+        'blog'=>[
+          'class'=>'my\blog\console\Module'
+        ],
     ],
     'components' => [
         'cache' => [
