@@ -171,7 +171,7 @@ SQL;
          * 明显感觉到yii使用了 多次查询的技巧 而实际上也是！:)
          */
         return $this->hasOne(User::className(),[
-           'user_id','id',
+           'id'=>'user_id',
         ]);
     }
 }

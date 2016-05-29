@@ -6,6 +6,7 @@ use my\blog\common\models\forms\Image;
 use Yii;
 use my\blog\common\models\Entry;
 use my\blog\common\models\EntrySearch;
+use yii\filters\AccessControl;
 use yii\helpers\Html;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -23,6 +24,23 @@ class EntryController extends Controller
     public function behaviors()
     {
         return [
+            'access' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'actions' => ['index', 'view',],
+                        'allow' => true,
+                        'roles' => ['?', '@'],
+                    ],
+                    [
+                        'actions' => ['create', 'delete', 'update',
+                            'image-upload'
+                        ],
+                        'allow' => true,
+                        'roles' => ['@'],
+                    ],
+                ],
+            ],
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
@@ -70,7 +88,11 @@ class EntryController extends Controller
     {
         $model = new Entry();
 
+        // var_dump(Yii::$app->user->getIdentity()) ;
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+
+            // 添加关系 也可以用behavior来做
+            $model->link('author',Yii::$app->user->getIdentity()) ;
 
             Yii::$app->session->setFlash('success', sprintf('entry %s 成功创建 !', $model->title));
 

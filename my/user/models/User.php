@@ -535,6 +535,6 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public function getBlogs()
     {
-       return $this->hasMany(Entry::className(), ['user_id','id']);
+       return $this->hasMany(Entry::className(), ['user_id'=>'id']);
     }
 }
