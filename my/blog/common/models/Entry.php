@@ -2,6 +2,7 @@
 
 namespace my\blog\common\models;
 
+use my\comment\models\Comment;
 use my\user\models\User;
 use Yii;
 use yii\behaviors\SluggableBehavior;
@@ -130,6 +131,7 @@ class Entry extends \yii\db\ActiveRecord
                 // 'value' => new Expression('NOW()'),
             ],
             [
+                // 好牛呀  竟然可以自动生成汉语拼音
                 'class' => SluggableBehavior::className(),
                 'attribute' => 'title',
                 'slugAttribute' => 'slug',
@@ -221,5 +223,13 @@ SQL;
         return $this->hasOne(User::className(), [
             'id' => 'user_id',
         ]);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getComments()
+    {
+        return $this->hasMany( Comment::className(),['entity_id'=>'id']);
     }
 }
