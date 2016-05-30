@@ -14,8 +14,25 @@ $this->params['breadcrumbs'][] = 'Update';
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <?= $this->render('_form', [
+    <?php $form = $this->render('_form', [
         'model' => $model,
     ]) ?>
 
+    <?php
+    echo \my\admin\widgets\AdminView::begin()
+        ->setTemplate('{index} {create} {update} {view} ')
+        ->setModel($model)
+        /*
+        ->setTabItem('view', [
+            'label' => 'View',
+            'url' => ['view', 'id' => $model->id],
+        ])*/
+        ->setTabItem('update',
+            [
+                'label' => 'Update',
+                'content' => $form,
+                'active' => true
+            ]
+        )->run();
+    ?>
 </div>

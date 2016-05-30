@@ -15,9 +15,20 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <?= Html::a('上传图片',['image-upload']) ?>
-    <?= $this->render('_form', [
+    <?php $form =  $this->render('_form', [
         'model' => $model,
     ]) ?>
 
+    <?php
+    echo \my\admin\widgets\AdminView::begin()
+        ->setTemplate('{index} {create} ')
+        ->setTabItem('create',
+        [
+            'label' => 'Create',
+            'content' => $form,
+            'active' => true
+        ]
+    )->run();
+    ?>
 
 </div>

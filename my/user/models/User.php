@@ -535,6 +535,51 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public function getBlogs()
     {
-       return $this->hasMany(Entry::className(), ['user_id'=>'id']);
+        return $this->hasMany(Entry::className(), ['user_id' => 'id']);
     }
+
+    /**
+     * |+  ------------------------------------------------------------------------------   +
+     */
+
+    /**
+     * @param string $email
+     * @param string $password
+     * @param array $attributes
+     * @return static
+     * @throws \yii\base\Exception
+     */
+    public static function create($email, $password, $attributes = [])
+    {
+        $model = new static();
+        $model->email = $email;
+        // 自动做加密
+        $model->password = Yii::$app->security->generatePasswordHash($password);
+
+        $model->setAttributes($attributes);
+
+        return $model;
+
+    }
+
+    /**
+     * @param string $email
+     * @param string $passord
+     * @return array|bool|null|ActiveRecord
+     */
+    public static function authenticate($email = '', $passord = '')
+    {
+        $user = static::find()->where([
+            'email'=>$email,
+        ])->one() ;
+        if($user->validatePassword($passord)){
+            return $user ;
+        }
+
+        return false ;
+    }
+
+    /**
+     * +  ------------------------------------------------------------------------------   +|
+     */
 }

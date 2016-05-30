@@ -25,7 +25,7 @@ $this->params['breadcrumbs'][] = $this->title;
         ]) ?>
     </p>
 
-    <?= DetailView::widget([
+    <?php $detailView = DetailView::widget([
         'model' => $model,
         'attributes' => [
             'id',
@@ -37,5 +37,34 @@ $this->params['breadcrumbs'][] = $this->title;
             'status',
         ],
     ]) ?>
+    <?php
+    echo \my\admin\widgets\AdminView::begin()
+        ->setTemplate('{index} {create} {view} {delete} {update}')
+        ->setTabItem('update',[
+            'label'=>'Update',
+            'url'=>['update', 'id' => $model->id] ,
+            'linkOptions' => [
+                'class' => 'btn btn-primary',
+            ],
+        ])
+        ->setTabItem('delete',[
+            'label'=>'Delete',
+            'url'=>['delete', 'id' => $model->id] ,
+            'linkOptions' => [
+                'class' => 'btn btn-danger',
+                'data' => [
+                    'confirm' => 'Are you sure you want to delete this item?',
+                    'method' => 'post',
+                ],
+            ],
+        ])
+        ->setTabItem('view',
+        [
+            'label' => 'View',
+            'content' => $detailView,
+            'active' => true,
 
+        ]
+    )->run();
+    ?>
 </div>

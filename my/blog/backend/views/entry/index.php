@@ -15,10 +15,9 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
-    <p>
-        <?= Html::a('Create Entry', ['create'], ['class' => 'btn btn-success']) ?>
-    </p>
-    <?= GridView::widget([
+        <?php // Html::a('Create Entry', ['create'], ['class' => 'btn btn-success']) ?>
+
+    <?php $gridView = GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
@@ -35,4 +34,14 @@ $this->params['breadcrumbs'][] = $this->title;
             ['class' => 'yii\grid\ActionColumn'],
         ],
     ]); ?>
+
+    <?php
+      echo \my\admin\widgets\AdminView::begin()->setTemplate('{index} {create} ')->setTabItem('index',
+          [
+              'label' => 'list',
+              'content' => $gridView,
+              'active' => true
+          ]
+      )->run();
+    ?>
 </div>
