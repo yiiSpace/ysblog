@@ -21,13 +21,18 @@ $this->params['breadcrumbs'][] = $this->title;
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
+            ['class' => \yii\grid\CheckboxColumn::className()],
+           // ['class' => 'yii\grid\SerialColumn'],
 
             'id',
             'title',
-            'slug',
-            'body:ntext',
-            'created_at',
+            // 'status',
+            'statusTitle',
+            'tagList',
+             // 'slug',
+            //'body:ntext',
+            'tease:ntext',
+            'created_at:date',
             // 'updated_at',
             // 'status',
 

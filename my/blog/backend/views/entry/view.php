@@ -15,8 +15,8 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Delete', ['delete', 'id' => $model->id], [
+        <?php Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+        <?php Html::a('Delete', ['delete', 'id' => $model->id], [
             'class' => 'btn btn-danger',
             'data' => [
                 'confirm' => 'Are you sure you want to delete this item?',
@@ -39,25 +39,9 @@ $this->params['breadcrumbs'][] = $this->title;
     ]) ?>
     <?php
     echo \my\admin\widgets\AdminView::begin()
-        ->setTemplate('{index} {create} {view} {delete} {update}')
-        ->setTabItem('update',[
-            'label'=>'Update',
-            'url'=>['update', 'id' => $model->id] ,
-            'linkOptions' => [
-                'class' => 'btn btn-primary',
-            ],
-        ])
-        ->setTabItem('delete',[
-            'label'=>'Delete',
-            'url'=>['delete', 'id' => $model->id] ,
-            'linkOptions' => [
-                'class' => 'btn btn-danger',
-                'data' => [
-                    'confirm' => 'Are you sure you want to delete this item?',
-                    'method' => 'post',
-                ],
-            ],
-        ])
+        ->setTemplate('{index} {create} {view}  {update} {delete} {search}')
+        ->setModel($model)
+       // ->setTabItem('search',Html::textInput('q'))
         ->setTabItem('view',
         [
             'label' => 'View',

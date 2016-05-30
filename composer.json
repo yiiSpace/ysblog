@@ -27,6 +27,7 @@
         ,"amnah/yii2-user": "^5.0"
 
         ,"bupy7/yii2-widget-cropbox": "*"
+        , "yiisoft/yii2-shell": "~2.0.0"
     },
     "require-dev": {
         "yiisoft/yii2-codeception": "*",

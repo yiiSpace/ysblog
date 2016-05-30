@@ -20,13 +20,8 @@ $this->params['breadcrumbs'][] = 'Update';
 
     <?php
     echo \my\admin\widgets\AdminView::begin()
-        ->setTemplate('{index} {create} {update} {view} ')
+        ->setTemplate('{index} {create} {update} {view} {delete} ')
         ->setModel($model)
-        /*
-        ->setTabItem('view', [
-            'label' => 'View',
-            'url' => ['view', 'id' => $model->id],
-        ])*/
         ->setTabItem('update',
             [
                 'label' => 'Update',

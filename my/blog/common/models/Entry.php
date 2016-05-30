@@ -4,7 +4,9 @@ namespace my\blog\common\models;
 
 use my\user\models\User;
 use Yii;
+use yii\behaviors\SluggableBehavior;
 use yii\behaviors\TimestampBehavior;
+use yii\helpers\StringHelper;
 
 /**
  * This is the model class for table "entry".
@@ -74,6 +76,18 @@ class Entry extends \yii\db\ActiveRecord
     /**
      * available status choices
      * 此方法别名可以是 getStatusChoices  ? 这个看起来怎么样 ^_^
+     * OK 的到引证确实可以叫 此名
+     * ---------------------------------------------------------------------------+
+     * class EntryModelView(ModelView):
+     * _status_choices = [(choice, label) for choice, label in [
+     * (Entry.STATUS_PUBLIC, 'Public'),
+     * (Entry.STATUS_DRAFT, 'Draft'),
+     * (Entry.STATUS_DELETED, 'Deleted'),
+     * ]]
+     * column_choices = {
+     * 'status': _status_choices,
+     * }
+     * --------------------------------------------------------------------------- +
      *
      * @return array
      */
@@ -84,6 +98,17 @@ class Entry extends \yii\db\ActiveRecord
             static::STATUS_PUBLIC => 'PUBLIC',
             static::STATUS_DELETED => 'DELETED',
         ];
+    }
+
+    /**
+     * 枚举状态的 可读化展示
+     * 可选名  statusLabel
+     * @return mixed
+     */
+    public function getStatusTitle()
+    {
+        $statusChoices = static::getStatusOptions();
+        return $statusChoices[$this->status];
     }
 
     /**
@@ -103,6 +128,11 @@ class Entry extends \yii\db\ActiveRecord
                 'createdAtAttribute' => 'created_at',
                 'updatedAtAttribute' => 'updated_at',
                 // 'value' => new Expression('NOW()'),
+            ],
+            [
+                'class' => SluggableBehavior::className(),
+                'attribute' => 'title',
+                'slugAttribute' => 'slug',
             ],
         ];
     }
@@ -160,6 +190,24 @@ SQL;
     }
 
     /**
+     * @return string
+     */
+    public function getTagList()
+    {
+        return join(', ', array_map(function ($tag) {
+            return $tag->title;
+        }, $this->tags));
+    }
+
+    /**
+     * @return string
+     */
+    public function getTease()
+    {
+        return StringHelper::truncate($this->body, 100);
+    }
+
+    /**
      * 所属关系
      *
      * @return \yii\db\ActiveQuery
@@ -170,8 +218,8 @@ SQL;
          *  因为是实例方法  所以其实是可以用$this->attributeName 来访问属性 构造一个查询的 这个给人感觉很怪的 如果这样用
          * 明显感觉到yii使用了 多次查询的技巧 而实际上也是！:)
          */
-        return $this->hasOne(User::className(),[
-           'id'=>'user_id',
+        return $this->hasOne(User::className(), [
+            'id' => 'user_id',
         ]);
     }
 }
