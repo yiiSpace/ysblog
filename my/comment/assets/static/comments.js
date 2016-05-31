@@ -124,6 +124,10 @@ Comments = window.Comments || {};
                 alertDiv = makeAlert('success', 'Success', 'your comment    was posted.');
                 form.before(alertDiv);
                 form[0].reset();
+                // 添加新的评论数据到首部
+                var commentMarkup = renderComment(data);
+                $(formSelector).before($(commentMarkup));
+
             });
             request.fail(function () {
                 alertDiv = makeAlert('danger', 'Error', 'your comment was    not posted.');
