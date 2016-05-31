@@ -48,6 +48,20 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
         ]) ?>
 
+        <hr/>
+        <?php \my\comment\assets\CommentAsset::register($this) ?>
+        <?= \my\comment\widgets\CommentForm::widget([
+            'entity_id' => $model->primaryKey,
+        ]); ?>
+        <?php \common\widgets\JsBlock::begin() ?>
+        <script>
+            $(function () {
+                Comments.setCommentListUrl('<?= \yii\helpers\Url::to(['/api/comment/comment']) ?>');
+                Comments.load(<?= $model->primaryKey ?>);
+                Comments.bindHandler();
+            });
+        </script>
+        <?php \common\widgets\JsBlock::end() ?>
     </div>
 
 <?php $this->beginBlock('sidebar') ?>

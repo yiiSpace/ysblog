@@ -95,6 +95,22 @@ $config = [
                 ],
 
         ],
+        'api' => [
+            'class' => 'my\api\Module',
+            'modules' => [
+                // 'v1' => 'my\api\v1\Module',
+                'v1' => [
+                  'class'=>'my\api\v1\Module',
+                    'modules'=>[
+                        'comment'=>'my\comment\api\Module'
+                    ],
+                ] ,
+
+                'comment'=>[
+                    'class'=>'my\comment\api\Module'
+                ],
+            ]
+        ]
     ],
 ];
 
