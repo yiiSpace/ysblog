@@ -5,6 +5,7 @@ $params = require(__DIR__ . '/params.php');
 $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
+
     'bootstrap' => [
         'log',
         'my\blog\frontend\Bootstrap',
@@ -13,15 +14,34 @@ $config = [
         '@my' => '@app/my',
         '@common' => '@app/common',
     ],
+    // support the multiple themes
+    // NOTE  不可以放 aliases 属性上面哦 不然别名找不到 坑！
+    'as themeAble' => [
+        'class' => 'common\behaviors\Themable',
+    ],
     'components' => [
+
+        // @see http://www.ramirezcobos.com/2014/03/22/how-to-use-bootstrapinterface-yii2/
         'view' => [
-            /*
+            'class'=>'common\base\View',
             'theme' => [
+                'class' => 'common\base\Theme',
+                'active' =>  'mdl', //'materialize',
+                'basePath' => '@app/themes/mdl',
+                // this will be used for assets(js css images) file
+                'baseUrl' => '@web/themes/mdl',
                 'pathMap' => [
-                    '@app/views' => '@vendor/dmstr/yii2-adminlte-asset/example-views/yiisoft/yii2-app'
+                    '@app/views' => [
+                        '@app/themes/mdl/views',
+                    ]
                 ],
+                /*
+                'pathMap' => [
+                    '@app/views' => '@app/themes/basic',
+                    '@app/modules' => '@app/themes/basic/modules', // <-- !!!
+                ],
+                */
             ],
-            */
         ],
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation

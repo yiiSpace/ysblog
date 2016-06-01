@@ -17,4 +17,9 @@ class DefaultController extends Controller
     {
         return $this->render('index');
     }
+
+    public function actionThemeWidget()
+    {
+       return  $this->render('theme-widget');
+    }
 }
