@@ -110,7 +110,10 @@ $config = [
                     'class'=>'my\comment\api\Module'
                 ],
             ]
-        ]
+        ],
+        'test' => [
+            'class' => 'my\test\Module',
+        ],
     ],
 ];
 

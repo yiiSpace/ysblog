@@ -101,7 +101,17 @@ Comments = window.Comments || {};
      * @param inputName
      */
     function getFormInputVal(form, inputName) {
-        form.find('input[name$="[' + inputName + ']"]').val();
+        form.find(':input[name$="[' + inputName + ']"]').val();
+    }
+
+    /**
+     * clear the content
+     * @param form
+     * @param contentName
+     */
+    function clearCommentContent(form,contentName){
+
+        form.find(':input[name$="[' + contentName + ']"]').val('');
     }
 
     function bindHandler() {
@@ -123,7 +133,8 @@ Comments = window.Comments || {};
             request.success(function (data) {
                 alertDiv = makeAlert('success', 'Success', 'your comment    was posted.');
                 form.before(alertDiv);
-                form[0].reset();
+                // form[0].reset();
+                clearCommentContent(form,'body') ;
                 // 添加新的评论数据到首部
                 var commentMarkup = renderComment(data);
                 $(formSelector).before($(commentMarkup));

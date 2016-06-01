@@ -29,15 +29,15 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'url')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'ip')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'ip')->hiddenInput(['maxlength' => true])->label(false) ?>
 
     <?= $form->field($model, 'body')->textarea(['rows' => 6]) ?>
 
-    <?= $form->field($model, 'status')->textInput() ?>
+    <?= $form->field($model, 'status')->hiddenInput()->label(false) ?>
 
-    <?= $form->field($model, 'created_at')->textInput() ?>
+    <?= $form->field($model, 'created_at')->hiddenInput()->label(false) ?>
 
-    <?= $form->field($model, 'entity_id')->textInput() ?>
+    <?= $form->field($model, 'entity_id')->hiddenInput()->label(false) ?>
 
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>

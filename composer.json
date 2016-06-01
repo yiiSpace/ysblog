@@ -12,7 +12,12 @@
         "irc": "irc://irc.freenode.net/yii",
         "source": "https://github.com/yiisoft/yii2"
     },
-
+    "repositories":[
+        {
+            "type":"vcs",
+            "url":"https://github.com/uworkru/yii2-riot"
+        }
+    ],
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.4.0",
@@ -28,6 +33,9 @@
 
         ,"bupy7/yii2-widget-cropbox": "*"
         , "yiisoft/yii2-shell": "~2.0.0"
+
+        ,"uworkru/yii2-riot":"*"
+        , "macgyer/yii2-materializecss": "*"
     },
     "require-dev": {
         "yiisoft/yii2-codeception": "*",
