@@ -10,11 +10,14 @@ $this->beginContent(__DIR__ . '/_main.php')
 
 
     <div class="row">
-        <div class="col-md-9">
+
+        <div class="col s9">
             <h1>{% block content_title %}{% endblock %}</h1>
             <?= $content ?>
+
         </div>
-        <div class="col-md-3">
+
+        <div class="col s3">
             <!--            The block tags are used to indicate overrideable areas of the page.-->
             {% block sidebar %}
             <!--            <ul class="well nav nav-stacked">    <li><a href="#">Sidebar item</a></li>             </ul>-->

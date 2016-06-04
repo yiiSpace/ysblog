@@ -35,7 +35,10 @@
         , "yiisoft/yii2-shell": "~2.0.0"
 
         ,"uworkru/yii2-riot":"*"
-        , "macgyer/yii2-materializecss": "*"
+        , "macgyer/yii2-materializecss": "*",
+        "roave/better-reflection": "^1.0"
+
+        ,"light/yii2-swagger": "~1.0.0"
     },
     "require-dev": {
         "yiisoft/yii2-codeception": "*",
