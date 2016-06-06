@@ -74,8 +74,67 @@ trait ActionsDetectable
         return $actionMenus;
     }
 
-    protected static  function collectControllerPaths()
+    /**
+     * @param $moduleControllerPath
+     * @param $controllerFileNames
+     * @param array $parentDir
+     *
+     *  // @see http://www.ruanyifeng.com/blog/2008/07/php_spl_notes.html
+     *  // @see http://php.net/manual/en/class.directoryiterator.php
+     */
+    protected static function collectControllerPaths($moduleControllerPath, &$controllerFileNames, $parentDir = [])
     {
+        //   echo 'yes' ;    print_r($parentDir) ;
+        // TODO 这里改为递归 可以处理目录嵌套情形
+        /*** class create new DirectoryIterator Object ***/
+        foreach (new \DirectoryIterator($moduleControllerPath) as $item) {
+            /** @var \SplFileInfo $file */
+            $file = $item;
+            //  echo $parentDir,'|', $item . '<br />';
+            // VarDumper::dump($item) ;
+            if (!$file->isDot()) {
+
+                if (!$file->isDir()) {
+                    // $controllerFileNames[] = $file->getBasename('Controller.php');
+                    if (count($parentDir) === 0) {
+                        $controllerFileNames[] = $file->getBasename('Controller.php');
+                        // echo $file->getBasename('Controller.php') ;
+                    } else {
+                        // print_r($parentDir);
+                        // 特殊类型表示 嵌套控制器目录情形
+                        // array_push($parentDir, $file->getBasename('Controller.php'));
+                        $parentDir[] = $file->getBasename('Controller.php');
+                        $controllerFileName = $parentDir;
+                        // print_r($controllerFileName) ;
+                        $controllerFileNames[] = $controllerFileName;
+                        // print_r($controllerFileNames);
+                    }
+
+                } else {
+                    /*
+                    // 如果还有子目录
+                    $parentDir[] = $file->getFilename();
+                    // array_push($parentDir, $file->getFilename());
+                    // echo 'dirName: ' , $file->getFilename() ,'<br/>';
+                    // __FUNCTION__
+                    call_user_func(__METHOD__,
+                        $moduleControllerPath . DIRECTORY_SEPARATOR . $file->getFilename(),
+                        $controllerFileNames,
+                        $parentDir // 累积效应
+                    );
+                    */
+                    //  注意这里 的大坑！！！  要使用临时变量 因为是在循环中状态会累积 所以千万不要用下面的代码
+                    // $parentDir[] = $file->getFilename() ;
+
+                    static::collectControllerPaths($moduleControllerPath . DIRECTORY_SEPARATOR . $file->getFilename(),
+                        $controllerFileNames, ArrayHelper::merge($parentDir, [$file->getFilename()]));
+                }
+                // echo __FUNCTION__ ;
+                // var_dump($collectControllerPaths) ;
+            }
+
+        }
+
 
     }
 
@@ -83,68 +142,18 @@ trait ActionsDetectable
     {
         $moduleControllerPath = $module->getControllerPath();
         $controllerFileNames = [];
-        // @see http://www.ruanyifeng.com/blog/2008/07/php_spl_notes.html
-        // @see http://php.net/manual/en/class.directoryiterator.php
+
         try {
             // 这里写的东西是否诡异 注意 “&” 的使用 而且先要声明该变量 不然use 时 会报错！
-            $collectControllerPaths = null;
-            $collectControllerPaths = function ($moduleControllerPath, &$controllerFileNames, $parentDir = [])
-            use (&$collectControllerPaths) {
-               //   echo 'yes' ;    print_r($parentDir) ;
-                // TODO 这里改为递归 可以处理目录嵌套情形
-                /*** class create new DirectoryIterator Object ***/
-                foreach (new \DirectoryIterator($moduleControllerPath) as $item) {
-                    /** @var \SplFileInfo $file */
-                    $file = $item;
-                    //  echo $parentDir,'|', $item . '<br />';
-                    // VarDumper::dump($item) ;
-                    if (!$file->isDot()) {
 
-                        // 如果还有子目录
-                        if ($file->isDir()) {
-
-                             $parentDir[] = $file->getFilename();
-                            // array_push($parentDir, $file->getFilename());
-                            // echo 'dirName: ' , $file->getFilename() ,'<br/>';
-                            // __FUNCTION__
-                            call_user_func($collectControllerPaths,
-                                $moduleControllerPath . DIRECTORY_SEPARATOR . $file->getFilename(),
-                                $controllerFileNames,
-                                $parentDir // 累积效应
-                            );
-
-
-                        } else {
-
-                            if (empty($parentDir)) {
-                                $controllerFileNames[] = $file->getBasename('Controller.php');
-                                // echo $file->getBasename('Controller.php') ;
-                            } elseif (count($parentDir)>0) {
-                                print_r($parentDir) ;
-                                /*
-                                // 特殊类型表示 嵌套控制器目录情形
-                                array_push($parentDir, $file->getBasename('Controller.php'));
-                                $controllerFileName = $parentDir;
-                                // print_r($controllerFileName) ;
-                                $controllerFileNames[] = $controllerFileName;
-                                // print_r($controllerFileNames) ;
-                                */
-                            }
-                        }
-                        // echo __FUNCTION__ ;
-                        // var_dump($collectControllerPaths) ;
-                    }
-
-                }
-            };
-            $collectControllerPaths($moduleControllerPath, $controllerFileNames);
+            static::collectControllerPaths($moduleControllerPath, $controllerFileNames);
 
         } /*** if an exception is thrown, catch it here ***/
         catch (\Exception $e) {
             // echo 'No files Found!<br />';
         }
-        print_r($controllerFileNames);
-        die(__LINE__);
+        //  print_r($controllerFileNames);
+        // die(__LINE__);
         if (!empty($controllerFileNames)) {
 
             $actions4controllers = array_map(function ($item) use ($module) {
