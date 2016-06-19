@@ -38,7 +38,9 @@
         , "macgyer/yii2-materializecss": "*",
         "roave/better-reflection": "^1.0"
 
-        ,"light/yii2-swagger": "~1.0.0"
+        ,"light/yii2-swagger": "~1.0.0",
+        "loveorigami/yii2-plugins-system": "^1.0",
+        "deployer/deployer": "~3.0"
     },
     "require-dev": {
         "yiisoft/yii2-codeception": "*",
