@@ -10,6 +10,7 @@ $config = [
     'bootstrap' => [
         'log',
         'my\blog\frontend\Bootstrap',
+        'plugins',
     ],
     'aliases' => [
         '@my' => '@app/my',
@@ -21,7 +22,10 @@ $config = [
         'class' => 'common\behaviors\Themable',
     ],
     'components' => [
-
+        'plugins' => [
+            'class' => 'lo\plugins\components\EventBootstrap',
+            'appId' => 'frontend'
+        ],
         // @see http://www.ramirezcobos.com/2014/03/22/how-to-use-bootstrapinterface-yii2/
         'view' => [
             'class'=>'common\base\View',
@@ -47,6 +51,16 @@ $config = [
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'VKwdY7E601t1uiliVkZw8WQAAik05hZQ',
+        ],
+        'settings' => [
+                'class'            => 'marsoltys\yii2settings\CmsSettings',
+                'cacheComponentId' => 'cache',
+                'cacheId'          => 'global_website_settings',
+                'cacheTime'        => 84000,
+                'tableName'        => '{{settings}}',
+                'dbComponentId'    => 'db',
+                'createTable'      => true, // TODO 首次运行后 第二次关闭之
+            'dbEngine'         => 'InnoDB',
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
@@ -99,6 +113,9 @@ $config = [
                 'blog' => [
                     'class' => 'my\blog\backend\Module',
                 ],
+                'menu' => [
+                    'class' => 'infoweb\menu\Module',
+                ],
             ]
         ],
         'blog' => [
@@ -134,6 +151,13 @@ $config = [
         ],
         'test' => [
             'class' => 'my\test\Module',
+        ],
+        'plugins' => [
+            'class' => 'lo\plugins\Module',
+            'pluginsDir'=>[
+                '@lo/plugins/plugins', // default dir with core plugins
+                // '@common/plugins', // dir with our plugins
+            ]
         ],
     ],
 ];

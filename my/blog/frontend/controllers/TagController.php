@@ -19,7 +19,7 @@ class TagController extends \yii\web\Controller
      */
     public function actionDetail($slug = '')
     {
-
+         // todo   写个帮助方法 cast下 slug 到id 也是可以的
         /** @var Tag $model * */
         $model = Tag::find()->where([ 'OR',[ 'slug' => $slug,],['title'=>$slug]])->one();
         if ($model !== null) {

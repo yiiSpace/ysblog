@@ -14,6 +14,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
         <h1><?= Html::encode($this->title) ?></h1>
 
+        <?php  echo Yii::$app->controller->findLayoutFile($this)?>
         <p>
 
             <?php
@@ -69,10 +70,15 @@ $this->params['breadcrumbs'][] = $this->title;
         <li><h4>Tags</h4></li>
         <?php foreach ($model->tags as $tag): ?>
             <li>
-                <?= Html::a($tag->title, ['tag/detail',
-                        // 'slug' => ( $tag->slug ? $tag->title : $tag->slug
-                        'slug' => $tag->title]
-                ) ?>
+
+                <div class="chip">
+                    <?= Html::a($tag->title, ['tag/detail',
+                            // 'slug' => ( $tag->slug ? $tag->title : $tag->slug
+                            'slug' => $tag->title]
+                    ) ?>
+                    <i class="material-icons">close</i>
+                </div>
+
             </li>
         <?php endforeach ?>
     </ul>

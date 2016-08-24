@@ -239,10 +239,11 @@ class Module extends \yii\base\Module
      */
     public function createController($route)
     {
+        return parent::createController($route) ;
         /*
         return parent::createController($route) ;
         // FIXME 不需要下面的蛋疼东西 累赘
-
+         */
         // check valid routes
         $validRoutes  = [$this->defaultRoute, "admin", "copy", "auth",
             'public',// 还有这一出
@@ -254,11 +255,18 @@ class Module extends \yii\base\Module
                 break;
             }
         }
-         */
         $isValidRoute = true ;
-        return (empty($route) or $isValidRoute)
+         $result = (empty($route) or $isValidRoute)
             ? parent::createController($route)
             : parent::createController("{$this->defaultRoute}/{$route}");
+         /*
+         print_r([
+            'route'=>$route ,
+             'defaultRoute'=>$this->defaultRoute ,
+             'this'=> parent::createController("{$this->defaultRoute}/{$route}"),
+         ]);
+        die($result) ; */
+        return $result ;
     }
 
     /**

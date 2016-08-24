@@ -13,12 +13,12 @@ use my\user\helpers\Timezone;
 
 $this->title = Yii::t('user', 'Home');
 $this->params['breadcrumbs'][] = $this->title;
+
+$this->beginContent()
 ?>
 <div class="user-home-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
-
-    <?php  echo Yii::$app->controller->findLayoutFile($this) // 布局文件 ?>
 
 
     <div class="row">

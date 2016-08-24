@@ -21,7 +21,7 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.4.0",
-        "yiisoft/yii2": ">=2.0.5",
+        "yiisoft/yii2": "*",
         "yiisoft/yii2-bootstrap": "*",
         "yiisoft/yii2-swiftmailer": "*",
         "dmstr/yii2-adminlte-asset": "2.*"
@@ -39,8 +39,23 @@
         "roave/better-reflection": "^1.0"
 
         ,"light/yii2-swagger": "~1.0.0",
-        "loveorigami/yii2-plugins-system": "^1.0",
+        "loveorigami/yii2-plugins-system": "*",
         "deployer/deployer": "~3.0"
+
+        ,"wbraganca/yii2-dynamicform": "*"
+        ,"wbraganca/yii2-fancytree-widget": "*"
+        ,"tolik505/yii2-easy-tree": "*",
+        "wbraganca/yii2-tagsinput": "dev-master@dev"
+        , "conquer/oauth2": "*",
+        "firebase/php-jwt": "^4.0",
+
+        "infoweb-internet-solutions/yii2-cms-menu": "*",
+        "mdmsoft/yii2-admin": "~2.0",
+        "yarcode/yii2-eav": "^0.3.2",
+        "marsoltys/yii2-settings": "*",
+
+        "bizley/ajaxdropdown": "*"
+        
     },
     "require-dev": {
         "yiisoft/yii2-codeception": "*",
@@ -49,7 +64,8 @@
         "yiisoft/yii2-faker": "*"
     },
     "config": {
-        "process-timeout": 1800
+        "process-timeout": 1800,
+        "secure-http":false
     },
     "scripts": {
         "post-create-project-cmd": [

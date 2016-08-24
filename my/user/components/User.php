@@ -34,10 +34,13 @@ class User extends \yii\web\User
         // check if user is banned. if so, log user out and redirect home
         // https://github.com/amnah/yii2-user/issues/99
         $user = $this->getIdentity();
-        if ($user && $user->banned_at) {
-            $this->logout();
-            Yii::$app->getResponse()->redirect(['/'])->send();
+        if($user instanceof \my\user\models\User){
+            if ($user && $user->banned_at) {
+                $this->logout();
+                Yii::$app->getResponse()->redirect(['/'])->send();
+            }
         }
+
 
         return $user === null;
     }
@@ -57,7 +60,10 @@ class User extends \yii\web\User
     public function afterLogin($identity, $cookieBased, $duration)
     {
         /** @var \my\user\models\User $identity */
-        $identity->updateLoginMeta();
+        if($identity instanceof  \my\user\models\User){
+            $identity->updateLoginMeta();
+        }
+
         parent::afterLogin($identity, $cookieBased, $duration);
     }
 
