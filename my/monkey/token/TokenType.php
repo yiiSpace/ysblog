@@ -18,6 +18,12 @@ class TokenType
     //  Operators;
     const ASSIGN = "=";
     const PLUS = "+";
+    const MINUS = "-";
+    const BANG = "!";
+    const ASTERISK = "*";
+    const SLASH = "/";
+    const LT = "<";
+    const GT = ">";
     //  Delimiters;
     const COMMA = ",";
     const SEMICOLON = ";";
@@ -28,24 +34,35 @@ class TokenType
     //  Keywords;
     const FUNCTION = "FUNCTION";
     const LET = "LET";
+    const TRUE = "TRUE";
+    const FALSE = "FALSE";
+    const IF = "IF";
+    const ELSE = "ELSE";
+    const RETURN = "RETURN";
 
     /**
      * @var array
      */
     protected static $keywords = [
-      'fn'=>self::FUNCTION,
-       'let'=>self::LET,
+        'fn' => self::FUNCTION,
+        'let' => self::LET,
+        "true" => TRUE,
+        "false" => self:: FALSE,
+        "if" => self::IF,
+        "else" => self::ELSE,
+        "return" => self:: RETURN,
     ];
 
     /**
      * @param string $ident
      * @return string
      */
-    public static function LookupIdent(string  $ident):string {
-        if(isset(static::$keywords[$ident])){
-            return static::$keywords[$ident] ;
+    public static function LookupIdent(string $ident): string
+    {
+        if (isset(static::$keywords[$ident])) {
+            return static::$keywords[$ident];
         }
-        return static::IDENT ;
+        return static::IDENT;
     }
 }
 

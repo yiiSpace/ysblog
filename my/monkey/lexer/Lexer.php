@@ -17,6 +17,26 @@ class Lexer
 {
 
     /**
+     * @var array
+     */
+    public static $oneCharTokens = [
+        '=' => TokenType::ASSIGN,
+        '+' => TokenType::PLUS,
+        '-' => TokenType::MINUS,
+        '!' => TokenType::BANG,
+        '*' => TokenType::ASTERISK,
+        '/' => TokenType::SLASH,
+        '<' => TokenType::LT,
+        '>' => TokenType::GT,
+        //  Delimiters,
+        ',' => TokenType::COMMA,
+        '(' => TokenType::LPAREN,
+        ')' => TokenType::RPAREN,
+        '{' => TokenType::LBRACE,
+        '}' => TokenType::RBRACE,
+    ];
+
+    /**
      *
      * @param string $input
      * @return Lexer
@@ -80,6 +100,13 @@ class Lexer
         $tok = null;
 
         $this->skipWitespace();
+        /*
+        var_dump(in_array(',',static::$oneCharTokens)) ;
+        $tok = $this->newToken(static::$oneCharTokens[','],',');
+        var_dump($tok);
+        print_r(array_keys(static::$oneCharTokens)) ; die(__METHOD__) ;
+
+
         // print_r($this->ch ." -------------------") ;
         // switch case  有个致命的问题 比较使用的是 == :  if( 0 == 'anything'){  die("oh ! no!!!");  }
         /**
@@ -94,8 +121,33 @@ class Lexer
             case '=' === $this->ch:
                 $tok = $this->newToken(TokenType::ASSIGN, $this->ch);
                 break;
+            case '+' === $this->ch:
+                $tok = $this->newToken(TokenType::PLUS, $this->ch);
+                break;
+            case '-' === $this->ch:
+                $tok = $this->newToken(TokenType::MINUS, $this->ch);
+                break;
+            case '!' === $this->ch:
+                $tok = $this->newToken(TokenType::BANG, $this->ch);
+                break;
+            case '/' === $this->ch:
+                $tok = $this->newToken(TokenType::SLASH, $this->ch);
+                break;
+            case '*' === $this->ch:
+                $tok = $this->newToken(TokenType::ASTERISK, $this->ch);
+                break;
+            case '<' === $this->ch:
+                $tok = $this->newToken(TokenType::LT, $this->ch);
+                break;
+            case '>' === $this->ch:
+                $tok = $this->newToken(TokenType::GT, $this->ch);
+                break;
+
             case ';' === $this->ch:
                 $tok = $this->newToken(TokenType::SEMICOLON, $this->ch);
+                break;
+            case ',' === $this->ch:
+                $tok = $this->newToken(TokenType::COMMA, $this->ch);
                 break;
 
             case '(' === $this->ch:
@@ -106,14 +158,6 @@ class Lexer
                 $tok = $this->newToken(TokenType::RPAREN, $this->ch);
                 break;
 
-            case ',' === $this->ch:
-                $tok = $this->newToken(TokenType::COMMA, $this->ch);
-                break;
-
-            case '+' === $this->ch:
-                $tok = $this->newToken(TokenType::PLUS, $this->ch);
-                break;
-
             case '{' === $this->ch:
                 $tok = $this->newToken(TokenType::LBRACE, $this->ch);
                 break;
@@ -121,6 +165,12 @@ class Lexer
             case '}' === $this->ch:
                 $tok = $this->newToken(TokenType::RBRACE, $this->ch);
                 break;
+            /*
+           case in_array($this->ch, array_keys(static::$oneCharTokens),true) === true:
+
+             $tok = $this->newToken(static::$oneCharTokens[$this->ch],$this->ch);
+             // var_dump($tok) ; die('wy');
+             break ; */
 
             case 0 === $this->ch :
                 // default:
@@ -135,14 +185,13 @@ class Lexer
                     $tok->Literal = $literal;
                     $tok->Type = TokenType::LookupIdent($literal);
                     return $tok; // 一定要return哦！
-                } elseif($this->isDigit($this->ch)){
-                   $tok = new Token();
-                   $tok->Type = TokenType::INT ;
-                   $tok->Literal = $this->readNumber();
+                } elseif ($this->isDigit($this->ch)) {
+                    $tok = new Token();
+                    $tok->Type = TokenType::INT;
+                    $tok->Literal = $this->readNumber();
 //                   die($tok->Literal) ;
-                   return $tok ; //  一定要return 哦！
-                }
-                else {
+                    return $tok; //  一定要return 哦！
+                } else {
                     $tok = $this->newToken(TokenType::ILLEGAL, $this->ch);
                 }
         }
@@ -173,10 +222,10 @@ class Lexer
     {
         // echo '<<< enter ',__METHOD__  ,PHP_EOL ;
         // $ch = $this->ch;
-        $whitspacePattern = '~\R|\s~' ; // '/^\s+$/'; // '// ^\s*$/'
+        $whitspacePattern = '~\R|\s~'; // '/^\s+$/'; // '// ^\s*$/'
         while (preg_match($whitspacePattern, $this->ch) == 1) {
             $this->readChar();
-           // $ch = $this->ch ;
+            // $ch = $this->ch ;
         }
         /*
         while (in_array($ch,[' ','\t', '\n','\r'])){
@@ -204,8 +253,9 @@ class Lexer
         for (; $this->isDigit($this->ch);) {
             $this->readChar();
         }
-         // die(__METHOD__) ;
-        return /*mb_substr*/substr($this->input, $position, $this->position - $position);
+        // die(__METHOD__) ;
+        return /*mb_substr*/
+            substr($this->input, $position, $this->position - $position);
     }
 
     /**
@@ -213,10 +263,10 @@ class Lexer
      *
      * 判断字符是否是数字
      *
-     * @param string|int $ch  注意ch为0时代表结束  不可做数字判断
+     * @param string|int $ch 注意ch为0时代表结束  不可做数字判断
      * @return bool
      */
-    protected function isDigit( $ch): bool
+    protected function isDigit($ch): bool
     {
         return is_numeric($ch) && $ch !== 0;
         // return preg_match('@^\d$@',$ch) === 1 ;
@@ -235,7 +285,8 @@ class Lexer
         for (; $this->isLetter($this->ch);) {
             $this->readChar();
         }
-        return /*mb_substr*/substr($this->input, $position, $this->position - $position);
+        return /*mb_substr*/
+            substr($this->input, $position, $this->position - $position);
     }
 
     /**
