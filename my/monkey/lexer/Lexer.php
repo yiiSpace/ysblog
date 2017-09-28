@@ -78,6 +78,8 @@ class Lexer
     {
         /** @var Token $tok */
         $tok = null;
+
+        $this->skipWitespace();
         // print_r($this->ch ." -------------------") ;
         // switch case  有个致命的问题 比较使用的是 == :  if( 0 == 'anything'){  die("oh ! no!!!");  }
         /**
@@ -88,42 +90,61 @@ class Lexer
          * case (0   ===$mixed): //etc. break;
          * }
          */
-        switch ($this->ch) {
-            case '=':
+        switch (true) {
+            case '=' === $this->ch:
                 $tok = $this->newToken(TokenType::ASSIGN, $this->ch);
                 break;
-            case ';':
+            case ';' === $this->ch:
                 $tok = $this->newToken(TokenType::SEMICOLON, $this->ch);
                 break;
 
-            case '(':
+            case '(' === $this->ch:
                 $tok = $this->newToken(TokenType::LPAREN, $this->ch);
                 break;
 
-            case ')':
+            case ')' === $this->ch:
                 $tok = $this->newToken(TokenType::RPAREN, $this->ch);
                 break;
 
-            case ',':
+            case ',' === $this->ch:
                 $tok = $this->newToken(TokenType::COMMA, $this->ch);
                 break;
 
-            case '+':
+            case '+' === $this->ch:
                 $tok = $this->newToken(TokenType::PLUS, $this->ch);
                 break;
 
-            case '{':
+            case '{' === $this->ch:
                 $tok = $this->newToken(TokenType::LBRACE, $this->ch);
                 break;
 
-            case '}':
+            case '}' === $this->ch:
                 $tok = $this->newToken(TokenType::RBRACE, $this->ch);
                 break;
 
-            case 0 : // 永远也匹配不上
+            case 0 === $this->ch :
                 // default:
                 $tok = $this->newToken(TokenType::EOF, "");
                 break;
+
+            default:
+                if ($this->isLetter($this->ch)) {
+                    // $tok->Literal = $this->readIdentifier();
+                    $literal = $this->readIdentifier();
+                    $tok = new Token(); // $this->newToken(TokenType::LookupIdent($literal),$literal) ;
+                    $tok->Literal = $literal;
+                    $tok->Type = TokenType::LookupIdent($literal);
+                    return $tok; // 一定要return哦！
+                } elseif($this->isDigit($this->ch)){
+                   $tok = new Token();
+                   $tok->Type = TokenType::INT ;
+                   $tok->Literal = $this->readNumber();
+//                   die($tok->Literal) ;
+                   return $tok ; //  一定要return 哦！
+                }
+                else {
+                    $tok = $this->newToken(TokenType::ILLEGAL, $this->ch);
+                }
         }
         $this->readChar();
         return $tok;
@@ -141,11 +162,99 @@ class Lexer
         $tok->Type = $tokenType;
         $tok->Literal = $ch;  // TODO 这里要做字节到字符的转换
 
-        if ($ch == '0') {
-            // die(__METHOD__) ;
-            throw  new Exception("hiiiii");
-        }
+
         return $tok;
     }
 
+    /**
+     *
+     */
+    protected function skipWitespace()
+    {
+        // echo '<<< enter ',__METHOD__  ,PHP_EOL ;
+        // $ch = $this->ch;
+        $whitspacePattern = '~\R|\s~' ; // '/^\s+$/'; // '// ^\s*$/'
+        while (preg_match($whitspacePattern, $this->ch) == 1) {
+            $this->readChar();
+           // $ch = $this->ch ;
+        }
+        /*
+        while (in_array($ch,[' ','\t', '\n','\r'])){
+            $this->readChar() ;
+        }
+        */
+        /*
+        $ch = ord($this->ch);
+        for (;
+            $ch === ord(' ') || $ch === ord('\t') || $ch === ord('\n') || $ch === ord('\r')
+        ;) {
+            echo 'read', $ch ;
+            $this->readChar();
+        }
+        */
+
+    }
+
+    /**
+     * @return string
+     */
+    protected function readNumber(): string
+    {
+        $position = $this->position;
+        for (; $this->isDigit($this->ch);) {
+            $this->readChar();
+        }
+         // die(__METHOD__) ;
+        return /*mb_substr*/substr($this->input, $position, $this->position - $position);
+    }
+
+    /**
+     * @TODO 未支持浮点数
+     *
+     * 判断字符是否是数字
+     *
+     * @param string|int $ch  注意ch为0时代表结束  不可做数字判断
+     * @return bool
+     */
+    protected function isDigit( $ch): bool
+    {
+        return is_numeric($ch) && $ch !== 0;
+        // return preg_match('@^\d$@',$ch) === 1 ;
+        /*
+        $ch = ord($ch);
+        return ord('0') <= $ch && $ch <= ord('9');
+        */
+    }
+
+    /**
+     * @return string
+     */
+    protected function readIdentifier(): string
+    {
+        $position = $this->position;
+        for (; $this->isLetter($this->ch);) {
+            $this->readChar();
+        }
+        return /*mb_substr*/substr($this->input, $position, $this->position - $position);
+    }
+
+    /**
+     * @param string|int $ch
+     * @return bool
+     */
+    protected function isLetter($ch): bool
+    {
+        // return preg_match('@[a-zA-Z_]@',$ch) == 1 ;
+        $ch = ord($ch);
+        return ord('a') <= $ch && $ch <= ord('z')
+            || ord('A') <= $ch && $ch <= ord('Z')
+            || $ch == ord('_');
+
+        /**
+         * function is_alnumspace($str){
+         *       return preg_match('/^[a-z0-9 ]+$/i',$str);
+         * }
+         */
+
+    }
 }

@@ -28,5 +28,24 @@ class TokenType
     //  Keywords;
     const FUNCTION = "FUNCTION";
     const LET = "LET";
+
+    /**
+     * @var array
+     */
+    protected static $keywords = [
+      'fn'=>self::FUNCTION,
+       'let'=>self::LET,
+    ];
+
+    /**
+     * @param string $ident
+     * @return string
+     */
+    public static function LookupIdent(string  $ident):string {
+        if(isset(static::$keywords[$ident])){
+            return static::$keywords[$ident] ;
+        }
+        return static::IDENT ;
+    }
 }
 
