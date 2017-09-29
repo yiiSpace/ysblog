@@ -119,7 +119,16 @@ class Lexer
          */
         switch (true) {
             case '=' === $this->ch:
-                $tok = $this->newToken(TokenType::ASSIGN, $this->ch);
+                if ($this->peekChar() == '=') {
+                    $ch = $this->ch;
+                    $this->readChar();
+                    $tok = new Token();
+                    $tok->Type = TokenType::EQ;
+                    $tok->Literal = $ch . $this->ch;
+                } else {
+                    $tok = $this->newToken(TokenType::ASSIGN, $this->ch);
+                }
+
                 break;
             case '+' === $this->ch:
                 $tok = $this->newToken(TokenType::PLUS, $this->ch);
@@ -128,7 +137,16 @@ class Lexer
                 $tok = $this->newToken(TokenType::MINUS, $this->ch);
                 break;
             case '!' === $this->ch:
-                $tok = $this->newToken(TokenType::BANG, $this->ch);
+                if ($this->peekChar() == '=') {
+                    $ch = $this->ch;
+                    $this->readChar();
+                    $tok = new Token();
+                    $tok->Type = TokenType::NOT_EQ;
+                    $tok->Literal = $ch . $this->ch;
+                } else {
+                    $tok = $this->newToken(TokenType::BANG, $this->ch);
+                }
+
                 break;
             case '/' === $this->ch:
                 $tok = $this->newToken(TokenType::SLASH, $this->ch);
@@ -165,12 +183,27 @@ class Lexer
             case '}' === $this->ch:
                 $tok = $this->newToken(TokenType::RBRACE, $this->ch);
                 break;
-            /*
-           case in_array($this->ch, array_keys(static::$oneCharTokens),true) === true:
+            case '[' === $this->ch:
+                $tok = $this->newToken(TokenType::LBRAKET, $this->ch);
+                break;
+            case ']' === $this->ch:
+                $tok = $this->newToken(TokenType::RBRAKET, $this->ch);
+                break;
+            case ':' === $this->ch:
+                $tok = $this->newToken(TokenType::COLON, $this->ch);
+                break;
 
-             $tok = $this->newToken(static::$oneCharTokens[$this->ch],$this->ch);
-             // var_dump($tok) ; die('wy');
-             break ; */
+            case '"' === $this->ch:
+                $tok = new Token();
+                $tok->Type = TokenType::STRING;
+                $tok->Literal = $this->readString();
+                break;
+            /*
+       case in_array($this->ch, array_keys(static::$oneCharTokens),true) === true:
+
+         $tok = $this->newToken(static::$oneCharTokens[$this->ch],$this->ch);
+         // var_dump($tok) ; die('wy');
+         break ; */
 
             case 0 === $this->ch :
                 // default:
@@ -242,6 +275,29 @@ class Lexer
         }
         */
 
+    }
+
+    /**
+     * @return int|string
+     */
+    protected function peekChar()
+    {
+        if ($this->readPosition >= strlen($this->input)) {
+            return 0;
+        }
+        return $this->input[$this->readPosition];
+    }
+
+    protected function readString()
+    {
+        $position = $this->position + 1;
+        for (; true;) {
+            $this->readChar();
+            if ($this->ch == '"') {
+                break;
+            }
+        }
+        return substr($this->input, $position, $this->position - $position);
     }
 
     /**

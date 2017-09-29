@@ -15,6 +15,7 @@ class TokenType
     //  Identifiers +literals;
     const IDENT = "IDENT"; // add, foobar, x, y, ...;
     const INT = "INT";// 1343456;
+    const STRING = "STRING";
     //  Operators;
     const ASSIGN = "=";
     const PLUS = "+";
@@ -24,6 +25,10 @@ class TokenType
     const SLASH = "/";
     const LT = "<";
     const GT = ">";
+
+    const EQ = "==";
+    const NOT_EQ = "!=";
+
     //  Delimiters;
     const COMMA = ",";
     const SEMICOLON = ";";
@@ -31,6 +36,9 @@ class TokenType
     const RPAREN = ")";
     const LBRACE = "{";
     const RBRACE = "}";
+    const LBRAKET = "[";
+    const RBRAKET = "]";
+    const COLON = ":";
     //  Keywords;
     const FUNCTION = "FUNCTION";
     const LET = "LET";
@@ -46,7 +54,7 @@ class TokenType
     protected static $keywords = [
         'fn' => self::FUNCTION,
         'let' => self::LET,
-        "true" => TRUE,
+        "true" =>  self::TRUE,
         "false" => self:: FALSE,
         "if" => self::IF,
         "else" => self::ELSE,
