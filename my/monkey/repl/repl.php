@@ -7,6 +7,7 @@
  */
 namespace monkey\repl;
 
+use monkey\token\TokenType;
 use yii\helpers\Console;
 
 
@@ -25,6 +26,10 @@ function Start($in /*io.Reader*/ , $out /*io.Writer*/) {
     for(;true;){
       Console::stdout(PROMPT);
       $line = Console::stdin() ;
+      $l = \monkey\lexer\Lexer::NewLexer($line) ;
+      for($tok = $l->NextToken(); $tok->Type != TokenType::EOF; $tok = $l->NextToken()){
+          printf("{ Type:%s Literal:%s } \n",$tok->Type, $tok->Literal) ;
+      }
     }
 
     /*
