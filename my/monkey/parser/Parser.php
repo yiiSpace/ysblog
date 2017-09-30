@@ -12,6 +12,7 @@ namespace monkey\parser;
 use monkey\ast\Identifier;
 use monkey\ast\LetStatement;
 use monkey\ast\Program;
+use monkey\ast\ReturnStatement;
 use monkey\ast\Statement;
 use monkey\lexer\Lexer;
 use monkey\token\Token;
@@ -33,6 +34,11 @@ class Parser
      * @var Token
      */
     protected $peekToken;
+
+    /**
+     * @var array|string[]
+     */
+    protected $errors = [] ;
 
     /**
      * @param Lexer $l
@@ -80,21 +86,23 @@ class Parser
     }
 
     /**
-     * @return Statement
+     * @return Statement|null
      */
-    protected function parseStatement():Statement{
+    protected function parseStatement() /* :?Statement */{
         switch ($this->curToken->Type){
             case TokenType::LET :
                 return $this->parseLetStatement() ;
+            case TokenType::RETURN :
+                return $this->parseReturnStatement() ;
             default:
                 return null ;
         }
     }
 
     /**
-     * @return LetStatement
+     * @return LetStatement|null
      */
-    protected function parseLetStatement() :LetStatement{
+    protected function parseLetStatement() {
         $stmt = new LetStatement();
         $stmt->Token = $this->curToken ;
 
@@ -118,6 +126,22 @@ class Parser
         // var_dump($stmt) ; die(__METHOD__) ;
         return $stmt ;
     }
+
+    /**
+     * @return ReturnStatement
+     */
+     protected function parseReturnStatement() /*:?RetrunStatement */
+     {
+        $stmt = new ReturnStatement();
+        $stmt->Token  = $this->curToken ;
+
+        $this->nextToken() ;
+
+        for(;!$this->curTokenIs(TokenType::SEMICOLON);){
+            $this->nextToken() ;
+        }
+        return $stmt ;
+     }
 
     /**
      * @param $tokenType
@@ -145,6 +169,23 @@ class Parser
             return true ;
         }
 
+        $this->peekError($tokenType) ;
         return false ;
+    }
+
+    /**
+     * @return array|string[]
+     */
+    public function Errors() {
+        return $this->errors ;
+    }
+
+    /**
+     * @param $tokenType
+     */
+    protected  function peekError($tokenType){
+        $msg = sprintf("expected next token to be %s, got %s instead",
+            $tokenType,$this->peekToken->Type) ;
+        $this->errors[] = $msg ;
     }
 }

@@ -11,6 +11,9 @@ namespace monkey\ast;
 
 interface Node
 {
+    /**
+     * @return string
+     */
     public function TokenLiteral() :string  ;
 
 }
