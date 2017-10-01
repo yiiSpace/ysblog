@@ -5,9 +5,7 @@
  * Date: 2017/10/1
  * Time: 14:09
  */
-
 namespace yiiunit\extensions\monkey\ast;
-
 
 use monkey\ast\Identifier;
 use monkey\ast\LetStatement;
@@ -16,8 +14,15 @@ use monkey\token\Token;
 use monkey\token\TokenType;
 use yiiunit\extensions\monkey\TestCase;
 
+/**
+ * Class AstTest
+ * @package yiiunit\extensions\monkey\ast
+ */
 class AstTest extends TestCase
 {
+    /**
+     *
+     */
     public function testString()
     {
         $program = new Program();

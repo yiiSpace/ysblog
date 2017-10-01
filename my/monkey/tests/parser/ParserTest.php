@@ -9,6 +9,8 @@
 namespace yiiunit\extensions\monkey\parser;
 
 
+use monkey\ast\ExpressionStatement;
+use monkey\ast\Identifier;
 use monkey\ast\ReturnStatement;
 use monkey\ast\Statement;
 use monkey\ast\LetStatement;
@@ -160,6 +162,43 @@ IN;
             );
         }
 
+    }
+
+    public function testIdentifierExpression()
+    {
+        $input = <<<IN
+foobar;
+IN;
+
+        $l = Lexer::NewLexer($input);
+        $p = Parser::NewParser($l);
+
+        $program = $p->ParseProgram();
+        $this->checkParserErrors($p);
+
+        $this->assertCount(1, $program->Statements
+            , sprintf("program.Statements does not contain 1 statements. got=%d",
+                count($program->Statements))
+        );
+
+        $stmt = $program->Statements[0];
+        $this->assertInstanceOf(ExpressionStatement::class, $stmt,
+            sprintf("stmt not ExpressionStatement. got=%s", gettype($stmt))
+        );
+        $ident = $stmt->Expression;
+        $this->assertInstanceOf(Identifier::class,$ident,
+            sprintf("stmt not Identifier. got=%s", gettype($ident))
+        );
+
+        $this->assertEquals($ident->Value, 'foobar',
+            sprintf("ident.Value not %s. got=%s",
+               'foobar',  $ident->Value)
+        );
+
+        $this->assertEquals($ident->TokenLiteral(), 'foobar',
+            sprintf("ident.TokenLiteral not %s. got=%s",
+                "foobar",  $ident->TokenLiteral())
+        );
     }
 
 }
