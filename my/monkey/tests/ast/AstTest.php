@@ -20,17 +20,34 @@ class AstTest extends TestCase
 {
     public function testString()
     {
-        $program = new Program() ;
-        $statements = [] ;
-        $letStatement = new LetStatement() ;
+        $program = new Program();
+        $statements = [];
+        $letStatement = new LetStatement();
 
-        $token = new Token() ;
-        $token->Type = TokenType::LET ;
+        $token = new Token();
+        $token->Type = TokenType::LET;
         $token->Literal = 'let';
+        $name = Identifier::CreateWith([
+           'Token'=>Token::CreateWith(['Type'=>TokenType::IDENT,'Literal'=>'myVar']) ,
+            'Value'=>'myVar' ,
+        ]);
 
-        $ident = new Identifier() ;
-        $ident->Token = '' ;
+        $value = Identifier::CreateWith([
+            'Token' => Token::CreateWith(['Type' => TokenType::IDENT, 'Literal' => 'anotherVar']),
+            'Value' => 'anotherVar',
+        ]);
 
+        $letStatement->Token = $token ;
+        $letStatement->Name = $name ;
+        $letStatement->Value = $value ;
+
+        $statements[] = $letStatement ;
+
+        $program->Statements = $statements ;
+
+        $this->assertEquals($program->String(),"let myVar = anotherVar;",
+            sprintf("program.String() wrong. got=%s", $program->String())
+            );
     }
 
 }
