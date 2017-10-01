@@ -12,6 +12,7 @@ namespace monkey\parser;
 use monkey\ast\Expression;
 use monkey\ast\ExpressionStatement;
 use monkey\ast\Identifier;
+use monkey\ast\IntegerLiteral;
 use monkey\ast\LetStatement;
 use monkey\ast\Program;
 use monkey\ast\ReturnStatement;
@@ -94,7 +95,8 @@ class Parser
         $p = new static();
         $p->L = $l;
 
-        $p->registerPrefix(TokenType::IDENT, [$p,'parseIdentifier']);
+        $p->registerPrefix(TokenType::IDENT, [$p, 'parseIdentifier']);
+        $p->registerPrefix(TokenType::INT, [$p, 'parseIntegerLiteral']);
 
         $p->nextToken();
         $p->nextToken();
@@ -154,6 +156,28 @@ class Parser
             'Token' => $this->curToken,
             'Value' => $this->curToken->Literal,
         ]);
+    }
+
+    /**
+     * @return Expression
+     */
+    public function parseIntegerLiteral()
+    {
+        // var_dump($this->curToken->Literal) ;
+        $lit = IntegerLiteral::CreateWith([
+            'Token' => $this->curToken,
+        ]);
+        try {
+            $value = intval($this->curToken->Literal);
+            // die("v: ".$value);
+        } catch (\Exception $ex) {
+            $msg = sprintf("could not parse %s as integer", $this->curToken->Literal);
+            $this->errors[] = $msg;
+            return null;
+        }
+
+        $lit->Value = $value ;
+        return $lit ;
     }
 
     /**

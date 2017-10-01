@@ -11,6 +11,7 @@ namespace yiiunit\extensions\monkey\parser;
 
 use monkey\ast\ExpressionStatement;
 use monkey\ast\Identifier;
+use monkey\ast\IntegerLiteral;
 use monkey\ast\ReturnStatement;
 use monkey\ast\Statement;
 use monkey\ast\LetStatement;
@@ -198,6 +199,46 @@ IN;
         $this->assertEquals($ident->TokenLiteral(), 'foobar',
             sprintf("ident.TokenLiteral not %s. got=%s",
                 "foobar",  $ident->TokenLiteral())
+        );
+    }
+    public function testIntegerExpression()
+    {
+        $input = <<<IN
+5;
+IN;
+
+        $l = Lexer::NewLexer($input);
+        $p = Parser::NewParser($l);
+
+        $program = $p->ParseProgram();
+        $this->checkParserErrors($p);
+
+        $this->assertCount(1, $program->Statements
+            , sprintf("program.Statements does not contain 1 statements. got=%d",
+                count($program->Statements))
+        );
+
+        $stmt = $program->Statements[0];
+        $this->assertInstanceOf(ExpressionStatement::class, $stmt,
+            sprintf("stmt not ExpressionStatement. got=%s", gettype($stmt))
+        );
+        $literal = $stmt->Expression;
+        $this->assertInstanceOf(IntegerLiteral::class,$literal,
+            sprintf("stmt not Identifier. got=%s", gettype($literal))
+        );
+
+        $this->assertEquals($literal->Value, '5',
+            sprintf("literal.Value not %d. got=%d",
+               5,  $literal->Value)
+        );
+        if($literal instanceof IntegerLiteral){
+            //  var_dump($literal);
+            // var_dump($literal->TokenLiteral()) ;
+        }
+
+        $this->assertEquals($literal->TokenLiteral(), '5',
+            sprintf("ident.TokenLiteral not %s. got=%s",
+                "5",  $literal->TokenLiteral())
         );
     }
 
