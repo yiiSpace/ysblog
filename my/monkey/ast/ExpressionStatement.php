@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: yiqing
- * Date: 2017/9/29
- * Time: 15:03
+ * Date: 2017/9/30
+ * Time: 20:41
  */
 namespace monkey\ast;
 
@@ -11,29 +11,26 @@ namespace monkey\ast;
 use monkey\helpers\CreateWith;
 use monkey\token\Token;
 
-class LetStatement implements Statement
+class ExpressionStatement implements Statement
 {
-
     use CreateWith ;
 
     /**
      * @var Token
      */
-    public $Token ;
-
-    /**
-     * @var Identifier
-     */
-    public $Name  ;
+    public $Token  ;
 
     /**
      * @var Expression
      */
-    public $Value  ;
+    public  $Expression ;
 
+    /**
+     * @return string
+     */
     public function TokenLiteral(): string
     {
-        return $this->Token->Literal ;
+       return $this->Token->Literal ;
     }
 
     public function statementNode()
@@ -46,15 +43,9 @@ class LetStatement implements Statement
      */
     public function String(): string
     {
-        $out = '';
-        $out .= $this->TokenLiteral().' ';
-        $out .= $this->Name->String() ;
-        $out .= ' = ';
-
-        if($this->Value != null){
-            $out .= $this->Value->String() ;
+        if($this->Expression != null ){
+            return $this->Expression->String() ;
         }
-        $out .= ';';
-        return $out ;
+        return '' ;
     }
 }

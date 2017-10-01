@@ -16,4 +16,9 @@ interface Node
      */
     public function TokenLiteral() :string  ;
 
+    /**
+     * @return string
+     */
+    public function String():string ;
+
 }

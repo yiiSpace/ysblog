@@ -9,10 +9,13 @@
 namespace monkey\ast;
 
 
+use monkey\helpers\CreateWith;
 use monkey\token\Token;
 
 class ReturnStatement implements Statement
 {
+    use CreateWith ;
+
     /**
      * the 'return' token
      *
@@ -35,5 +38,20 @@ class ReturnStatement implements Statement
     public function statementNode()
     {
 
+    }
+
+    /**
+     * @return string
+     */
+    public function String(): string
+    {
+       $out = '';
+       $out .= $this->TokenLiteral() . ' ';
+
+       if($this->ReturnValue != null ){
+           $out .= $this->ReturnValue->String() ;
+       }
+       $out .= ';';
+       return $out ;
     }
 }

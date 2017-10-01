@@ -8,11 +8,13 @@
 
 namespace monkey\ast;
 
-
+use monkey\helpers\CreateWith;
 use monkey\token\Token;
 
 class Identifier implements Expression
 {
+    use CreateWith ;
+
     /**
      * @var Token
      */
@@ -30,5 +32,13 @@ class Identifier implements Expression
     public function TokenLiteral(): string
     {
         return $this->Token->Literal ;
+    }
+
+    /**
+     * @return string
+     */
+    public function String(): string
+    {
+       return $this->Value ;
     }
 }

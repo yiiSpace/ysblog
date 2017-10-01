@@ -5,8 +5,9 @@
  * Date: 2017/9/29
  * Time: 14:56
  */
-
 namespace monkey\ast;
+
+use monkey\helpers\CreateWith;
 
 /**
  * Class Program
@@ -14,6 +15,8 @@ namespace monkey\ast;
  */
 class Program implements Node
 {
+    use CreateWith ;
+
     /**
      * @var array|Node[]|Statement[]
      */
@@ -28,5 +31,17 @@ class Program implements Node
             return $this->Statements[0]->TokenLiteral() ;
         }
         return '' ;
+    }
+
+    /**
+     * @return string
+     */
+    public function String(): string
+    {
+        $out = '' ;
+        foreach ($this->Statements as $i=>$statement){
+            $out .= $statement->String() ;
+        }
+        return $out ;
     }
 }
