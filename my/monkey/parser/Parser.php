@@ -12,8 +12,10 @@ namespace monkey\parser;
 use monkey\ast\Expression;
 use monkey\ast\ExpressionStatement;
 use monkey\ast\Identifier;
+use monkey\ast\InfixExpression;
 use monkey\ast\IntegerLiteral;
 use monkey\ast\LetStatement;
+use monkey\ast\PrefixExpression;
 use monkey\ast\Program;
 use monkey\ast\ReturnStatement;
 use monkey\ast\Statement;
@@ -32,6 +34,38 @@ class Parser
     const PREFIX = 6; // -X or !X
     const CALL = 7; // myFunction(X)
 
+    /**
+     * 优先级表
+     *
+     * @var array
+     */
+    protected static $precedences = [
+        TokenType::EQ => self::EQUALS,
+        TokenType::NOT_EQ => self::EQUALS,
+        TokenType::LT => self:: LESSGREATER,
+        TokenType::GT => self::LESSGREATER,
+        TokenType::PLUS => self::SUM,
+        TokenType::MINUS => self::SUM,
+        TokenType::SLASH => self::PRODUCT,
+        TokenType::ASTERISK => self::PRODUCT,
+    ];
+
+    /**
+     * @return int
+     */
+    protected function peekPrecedence(): int
+    {
+        $p = self::$precedences[$this->peekToken->Type] ?? self::LOWEST;
+        return $p;
+    }
+
+    /**
+     * @return int
+     */
+    protected function curPrecedence(): int
+    {
+        return self::$precedences[$this->curToken->Type] ?? self::LOWEST;
+    }
 
     /**
      * @var Lexer
@@ -87,6 +121,15 @@ class Parser
     }
 
     /**
+     * @param string $tokenType
+     */
+    protected function noPrefixParseFnError($tokenType)
+    {
+        $msg = sprintf("no prefix parse function for %s found", $tokenType);
+        $this->errors[] = $msg;
+    }
+
+    /**
      * @param Lexer $l
      * @return Parser
      */
@@ -97,6 +140,20 @@ class Parser
 
         $p->registerPrefix(TokenType::IDENT, [$p, 'parseIdentifier']);
         $p->registerPrefix(TokenType::INT, [$p, 'parseIntegerLiteral']);
+
+        $p->registerPrefix(TokenType::BANG, [$p, 'parsePrefixExpression']);
+        $p->registerPrefix(TokenType::MINUS, [$p, 'parsePrefixExpression']);
+
+        $p->registerInfix(TokenType::PLUS, [$p, 'parseInfixExpression']);
+        $p->registerInfix(TokenType::MINUS, [$p, 'parseInfixExpression']);
+        $p->registerInfix(TokenType::SLASH, [$p, 'parseInfixExpression']);
+        $p->registerInfix(TokenType::ASTERISK, [$p, 'parseInfixExpression']);
+        $p->registerInfix(TokenType::EQ, [$p, 'parseInfixExpression']);
+        $p->registerInfix(TokenType::NOT_EQ, [$p, 'parseInfixExpression']);
+        $p->registerInfix(TokenType::LT, [$p, 'parseInfixExpression']);
+        $p->registerInfix(TokenType::GT, [$p, 'parseInfixExpression']);
+
+
 
         $p->nextToken();
         $p->nextToken();
@@ -176,8 +233,8 @@ class Parser
             return null;
         }
 
-        $lit->Value = $value ;
-        return $lit ;
+        $lit->Value = $value;
+        return $lit;
     }
 
     /**
@@ -243,16 +300,73 @@ class Parser
 
     /**
      * @param int $precedence
-     * @return Expression
+     * @return Expression|null
      */
-    protected function parseExpression($precedence)
+    protected function parseExpression($precedence) // :?Expression
     {
-        $prefix = $this->prefixParseFns[$this->curToken->Type];
+        /**
+         * php7 新增三元运算符
+         *  $prefix = ... ?? false  等价:
+         * $prefix = isset($$this->prefixParseFns[$this->curToken->Type]) ? $this->prefixParseFns[$this->curToken->Type] : false;
+         */
+        $prefix = $this->prefixParseFns[$this->curToken->Type] ?? false;
+
         if (empty($prefix)) {
+            $this->noPrefixParseFnError($this->curToken->Type);
             return null;
         }
         $leftExp = call_user_func($prefix); // $prefix() ;
+
+        while (
+            !$this->peekTokenIs(TokenType::SEMICOLON)
+            && $precedence < $this->peekPrecedence()
+        ) {
+            $infix = $this->infixParseFns[$this->peekToken->Type] ?? null ;
+            if($infix == null){
+                return $leftExp ;
+            }
+
+            $this->nextToken() ;
+
+            $leftExp = call_user_func($infix,$leftExp);
+        }
         return $leftExp;
+    }
+
+    /**
+     * @return Expression
+     */
+    public function parsePrefixExpression()/*:Expression*/
+    {
+        $expression = PrefixExpression::CreateWith([
+            'Token' => $this->curToken,
+            'Operator' => $this->curToken->Literal,
+        ]);
+
+        $this->nextToken();
+
+        $expression->Right = $this->parseExpression(static::PREFIX);
+
+        return $expression;
+    }
+
+    /**
+     * @param Expression $left
+     * @return Expression
+     */
+    protected function parseInfixExpression(Expression $left) //:Expression
+    {
+        $expression = InfixExpression::CreateWith([
+            'Token' => $this->curToken,
+            'Operator' => $this->curToken->Literal,
+            'Left' => $left,
+        ]);
+
+        $precedence = $this->curPrecedence();
+        $this->nextToken();
+        $expression->Right = $this->parseExpression($precedence);
+
+        return $expression;
     }
 
     /**
