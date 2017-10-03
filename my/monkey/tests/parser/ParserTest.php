@@ -246,6 +246,7 @@ IN;
                 "5", $literal->TokenLiteral())
         );
     }
+
     public function testBooleanExpression()
     {
         $input = <<<IN
@@ -294,6 +295,9 @@ IN;
         $prefixTests = [
             ['!5', '!', 5],
             ['-15', '-', 15],
+
+            ["!true;", "!", true],
+            ["!false;", "!", false],
         ];
 
         foreach ($prefixTests as $i => $tt) {
@@ -324,8 +328,12 @@ IN;
                 sprintf("exp.Operator is not %s. got=%s",
                     $tt[1], $exp->Operator)
             );
-
+            /*
             if (!$this->_testIntegerLiteral($exp->Right, $tt[2])) {
+                return;
+            }
+            */
+            if (!$this->_testLiteralExpression($exp->Right, $tt[2])) {
                 return;
             }
         }
@@ -342,6 +350,10 @@ IN;
             ["5 < 5;", 5, "<", 5],
             ["5 == 5;", 5, "==", 5],
             ["5 != 5;", 5, "!=", 5],
+
+            ["true == true", true, "==", true],
+            ["true != false", true, "!=", false],
+            ["false == false", false, "==", false],
         ];
 
         foreach ($infixTests as $i => $tt) {
@@ -368,18 +380,24 @@ IN;
                 sprintf("stmt is not InfixExpression. got=%s", gettype($stmt->Expression))
             );
 
+            if (!$this->_testLiteralExpression($exp->Left, $tt[1])) {
+                return;
+            }
+            if (!$this->_testLiteralExpression($exp->Right, $tt[3])) {
+                return;
+            }
+            /*
             if (!$this->_testIntegerLiteral($exp->Left, $tt[1])) {
                 return;
             }
-
             $this->assertEquals($exp->Operator, $tt[2],
                 sprintf("exp.Operator is not %s. got=%s",
                     $tt[2], $exp->Operator)
             );
-
             if (!$this->_testIntegerLiteral($exp->Right, $tt[3])) {
                 return;
             }
+            */
         }
     }
 
@@ -437,20 +455,58 @@ IN;
                 "3 + 4 * 5 == 3 * 1 + 4 * 5",
                 "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
             ],
-        ] ;
 
-        foreach($tests as $i=>$tt){
-            $input = $tt[0] ;
+            [
+                "true",
+                "true",
+            ],
+            [
+                "false",
+                "false",
+            ],
+            [
+                "3 > 5 == false",
+                "((3 > 5) == false)",
+            ],
+            [
+                "3 < 5 == true",
+                "((3 < 5) == true)",
+            ],
+
+            [
+                "1 + (2 + 3) + 4",
+                "((1 + (2 + 3)) + 4)",
+            ],
+            [
+                "(5 + 5) * 2",
+                "((5 + 5) * 2)",
+            ],
+            [
+                "2 / (5 + 5)",
+                "(2 / (5 + 5))",
+            ],
+            [
+                "-(5 + 5)",
+                "(-(5 + 5))",
+            ],
+            [
+                "!(true == true)",
+                "(!(true == true))",
+            ],
+        ];
+
+        foreach ($tests as $i => $tt) {
+            $input = $tt[0];
             $l = Lexer::NewLexer($input);
-            $p = Parser::NewParser($l) ;
-            $program = $p->ParseProgram() ;
-            $this->checkParserErrors($p) ;
+            $p = Parser::NewParser($l);
+            $program = $p->ParseProgram();
+            $this->checkParserErrors($p);
 
-            $actual = $program->String() ;
+            $actual = $program->String();
 
-            $this->assertTrue($actual==$tt[1],
+            $this->assertTrue($actual == $tt[1],
                 sprintf("expected=%q, got=%q", $tt[1], $actual)
-                );
+            );
         }
 
     }
@@ -491,31 +547,32 @@ IN;
      * @param string $value
      * @return bool
      */
-    protected function _testIdentifier(Expression $exp,$value=''):bool {
+    protected function _testIdentifier(Expression $exp, $value = ''): bool
+    {
         $ident = $exp;
         $this->assertInstanceOf(Identifier::class, $exp,
             sprintf("exp is not Identifier. got=%s", gettype($exp))
         );
 
-        if($ident instanceof  Identifier){
-            if($ident->Value != $value){
+        if ($ident instanceof Identifier) {
+            if ($ident->Value != $value) {
                 $this->assertTrue(false,
                     sprintf("ident.Value not %s. got=%s", $value,
-                       $ident->Value)
+                        $ident->Value)
                 );
-                return false ;
+                return false;
             }
 
-            if($ident->TokenLiteral() != $value){
+            if ($ident->TokenLiteral() != $value) {
                 $this->assertTrue(false,
                     sprintf("ident.TokenLiteral not %s. got=%s", $value,
                         $ident->TokenLiteral())
                 );
-                return false ;
+                return false;
             }
 
         }
-        return true ;
+        return true;
     }
 
     /**
@@ -526,18 +583,23 @@ IN;
     protected function _testLiteralExpression(
         Expression $exp,
         $excepted
-    ):bool
+    ): bool
     {
-        switch (gettype($excepted)){
+
+        switch (gettype($excepted)) {
             case 'int':
-                return $this->_testIntegerLiteral($exp,$excepted);
+            case 'integer':
+                return $this->_testIntegerLiteral($exp, $excepted);
             case 'string':
-                return $this->_testIdentifier($exp,$excepted);
+                return $this->_testIdentifier($exp, $excepted);
+            case 'bool':
+            case 'boolean':
+                return $this->_testBooleanLiteral($exp, $excepted);
         }
         $this->assertTrue(false,
             sprintf("type of exp not handled. got=%s", gettype($excepted))
         );
-        return false ;
+        return false;
     }
 
     /**
@@ -547,27 +609,62 @@ IN;
      * @param $right
      * @return bool
      */
-    protected function _testInfixExpression(Expression $exp ,$left,$operator, $right):bool
+    protected function _testInfixExpression(Expression $exp, $left, $operator, $right): bool
     {
-        $opExp = $exp ;
+        $opExp = $exp;
         $this->assertInstanceOf(InfixExpression::class, $exp,
-            sprintf("exp is not InfixExpression. got=%s(%s)", gettype($exp),$exp)
+            sprintf("exp is not InfixExpression. got=%s(%s)", gettype($exp), $exp)
         );
-        if(! $this->_testLiteralExpression($opExp->Left, $left)){
-            return false ;
+        if (!$this->_testLiteralExpression($opExp->Left, $left)) {
+            return false;
         }
 
-        if($opExp->Operator != $operator){
+        if ($opExp->Operator != $operator) {
             $this->assertFlase(true,
                 sprintf("exp.Operator is not '%s'. got=%s", $operator, $opExp->Operator)
             );
             return false;
         }
 
-        if(!$this->_testLiteralExpression($opExp->Right, $right)){
-            return false ;
+        if (!$this->_testLiteralExpression($opExp->Right, $right)) {
+            return false;
         }
-        return true ;
+        return true;
+
+    }
+
+    /**
+     * @param Expression $exp
+     * @param bool $value
+     * @return bool
+     */
+    protected function _testBooleanLiteral(Expression $exp, bool $value): bool
+    {
+        $bo = $exp;
+        $this->assertInstanceOf(Boolean::class, $exp,
+            sprintf("exp is not Boolean. got=%s(%s)", gettype($exp), $exp->String())
+        );
+
+        if ($bo->Value != $value) {
+            // $this->assertFalse(true,
+            $this->assertTrue(false,
+                sprintf("bo.Value is not '%s'. got=%s", $value, $bo->Value)
+            );
+            return false;
+        }
+        /*
+        var_dump($bo) ;
+
+        if ($bo->TokenLiteral() != sprintf('%s', gettype($value))) {
+           // $this->assertFlase(true,
+            $this->assertTrue(false,
+                sprintf("bo.TokenLiteral not %s. got=%s", gettype($value), $bo->TokenLiteral())
+            );
+            return false;
+        }
+        */
+
+        return true;
 
     }
 }

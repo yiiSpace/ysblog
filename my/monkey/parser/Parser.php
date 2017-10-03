@@ -9,6 +9,7 @@
 namespace monkey\parser;
 
 
+use monkey\ast\Boolean;
 use monkey\ast\Expression;
 use monkey\ast\ExpressionStatement;
 use monkey\ast\Identifier;
@@ -144,6 +145,12 @@ class Parser
         $p->registerPrefix(TokenType::BANG, [$p, 'parsePrefixExpression']);
         $p->registerPrefix(TokenType::MINUS, [$p, 'parsePrefixExpression']);
 
+
+        $p->registerPrefix(TokenType::TRUE, [$p, 'parseBoolean']);
+        $p->registerPrefix(TokenType::FALSE, [$p, 'parseBoolean']);
+
+        $p->registerPrefix(TokenType::LPAREN, [$p, 'parseGroupedExpression']);
+
         $p->registerInfix(TokenType::PLUS, [$p, 'parseInfixExpression']);
         $p->registerInfix(TokenType::MINUS, [$p, 'parseInfixExpression']);
         $p->registerInfix(TokenType::SLASH, [$p, 'parseInfixExpression']);
@@ -152,7 +159,6 @@ class Parser
         $p->registerInfix(TokenType::NOT_EQ, [$p, 'parseInfixExpression']);
         $p->registerInfix(TokenType::LT, [$p, 'parseInfixExpression']);
         $p->registerInfix(TokenType::GT, [$p, 'parseInfixExpression']);
-
 
 
         $p->nextToken();
@@ -213,6 +219,32 @@ class Parser
             'Token' => $this->curToken,
             'Value' => $this->curToken->Literal,
         ]);
+    }
+
+    /**
+     * @return Expression
+     */
+    protected function parseBoolean() // :Expression
+    {
+        return Boolean::CreateWith([
+            'Token' => $this->curToken,
+            'Value' => $this->curTokenIs(TokenType::TRUE),
+        ]);
+    }
+
+    /**
+     * @return Expression|null
+     */
+    protected function parseGroupedExpression() // :Expression
+    {
+        $this->nextToken();
+
+        $exp = $this->parseExpression(self::LOWEST);
+
+        if (!$this->expectPeek(TokenType::RPAREN)) {
+            return null;
+        }
+        return $exp;
     }
 
     /**
@@ -321,14 +353,14 @@ class Parser
             !$this->peekTokenIs(TokenType::SEMICOLON)
             && $precedence < $this->peekPrecedence()
         ) {
-            $infix = $this->infixParseFns[$this->peekToken->Type] ?? null ;
-            if($infix == null){
-                return $leftExp ;
+            $infix = $this->infixParseFns[$this->peekToken->Type] ?? null;
+            if ($infix == null) {
+                return $leftExp;
             }
 
-            $this->nextToken() ;
+            $this->nextToken();
 
-            $leftExp = call_user_func($infix,$leftExp);
+            $leftExp = call_user_func($infix, $leftExp);
         }
         return $leftExp;
     }
