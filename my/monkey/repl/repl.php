@@ -7,6 +7,7 @@
  */
 namespace monkey\repl;
 
+use monkey\evaluator\Evaluator;
 use monkey\parser\Parser;
 use monkey\token\TokenType;
 use yii\helpers\Console;
@@ -52,7 +53,13 @@ function Start($in /*io.Reader*/ , $out /*io.Writer*/) {
           printParserErrors($p->Errors());
           continue ;
       }
-      Console::stdout($program->String());
+      // Console::stdout($program->String());
+
+        $evaluated = Evaluator::DoEval($program) ;
+      if($evaluated != null){
+          Console::output($evaluated->Inspect()) ;
+      }
+
       Console::stdout("\n") ;
     }
 

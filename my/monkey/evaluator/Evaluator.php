@@ -21,7 +21,7 @@ class Evaluator
 
     /**
      * @param Node $node
-     * @return Object
+     * @return \monkey\object\Object
      */
     public static function DoEval(Node $node) // :Object
     {
