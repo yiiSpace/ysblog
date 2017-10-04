@@ -14,8 +14,21 @@ use yii\helpers\Console;
 
 const PROMPT = ">> ";
 
+// @see https://www.ascii-code.com/ascii-art/animals/monkeys.php
 const MONKEY_FACE = <<<EOD
-HERE dummy MONKEY FACE
+                    ',
+           .-`-,\__
+              ."`   `,
+            .'_.  ._  `;.
+        __ / `      `  `.\ .--.
+       /--,| 0)   0)     )`_.-,)
+      |    ;.-----.__ _-');   /
+       '--./         `.`/  `"`
+          :   '`      |.      
+          | \     /  //         
+           \ '---'  /'        
+            `------' \  
+             _/       `--...
 EOD;
 
 /**
@@ -81,9 +94,13 @@ function Start($in /*io.Reader*/ , $out /*io.Writer*/) {
 function printParserErrors(/*$out io.Writer,*/ $errors  /*string[]*/) {
     $out = '' ;
     $out .= MONKEY_FACE ;
-    $out .=  "Woops! We ran into some monkye business here!\n";
+    $out .=  "\n Woops! We ran into some monkye business here!\n";
     $out .= "  parser errors:\n";
-    $out .= join("\n",$errors) ;
+
+    $errors = array_map(function($error) {
+        return "\t".$error."\n" ;
+    },$errors);
+     $out .= join('',$errors) ;
     echo $out ;
     /*
     io.WriteString(out, MONKEY_FACE)
