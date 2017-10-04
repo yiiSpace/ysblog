@@ -10,6 +10,7 @@ namespace yiiunit\extensions\monkey\parser;
 
 
 use monkey\ast\Boolean;
+use monkey\ast\CallExpression;
 use monkey\ast\Expression;
 use monkey\ast\ExpressionStatement;
 use monkey\ast\FunctionLiteral;
@@ -93,6 +94,43 @@ IN;
             $stmt = $program->Statements[$i];
             $this->_testLetStatement($stmt, $tt[0]);
         }
+
+    }
+
+    public function testLetStatements3()
+    {
+        $tests = [
+            ["let x = 5;", "x", 5],
+            ["let y = true;", "y", true],
+            ["let foobar = y", "foobar", "y"],
+        ];
+
+        foreach ($tests as $i=>$tt){
+            $input = $tt[0] ;
+            $l = Lexer::NewLexer($input);
+            $p = Parser::NewParser($l);
+
+            $program = $p->ParseProgram();
+            $this->checkParserErrors($p);
+
+            $this->assertCount(1, $program->Statements
+                , sprintf("program.Statements does not contain 3 statements. got=%d",
+                    count($program->Statements))
+            );
+
+            $stmt = $program->Statements[0];
+            if(! $this->_testLetStatement($stmt,$tt[1])){
+                return ;
+            }
+            $val = $stmt->Value ;
+            if(!$this->_testLiteralExpression($val,$tt[2])){
+                return ;
+            }
+        }
+
+
+
+
 
     }
 
@@ -495,6 +533,19 @@ IN;
                 "!(true == true)",
                 "(!(true == true))",
             ],
+
+            [
+                "a + add(b * c) + d",
+                "((a + add((b * c))) + d)",
+            ],
+            [
+                "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))",
+                "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
+            ],
+            [
+                "add(a + b + c * d / f + g)",
+                "add((((a + b) + ((c * d) / f)) + g))",
+            ],
         ];
 
         foreach ($tests as $i => $tt) {
@@ -537,21 +588,21 @@ IN;
         $this->assertInstanceOf(IfExpression::class, $exp,
             sprintf("stmt is not IfExpression. got=%s", gettype($stmt->Expression))
         );
-        if(!$this->_testInfixExpression($exp->Condition,"x",'<','y')){
-            return  ;
+        if (!$this->_testInfixExpression($exp->Condition, "x", '<', 'y')) {
+            return;
         }
-        if(count($exp->Consequence->Statements) != 1){
+        if (count($exp->Consequence->Statements) != 1) {
             $this->assertTrue(false,
                 sprintf("consequence is not 1 statements. got=%d\n", count($exp->Consequence->Statements))
             );
         }
-        $consequence = $exp->Consequence->Statements[0] ;
+        $consequence = $exp->Consequence->Statements[0];
         // var_dump($exp->Consequence) ;
         $this->assertInstanceOf(ExpressionStatement::class, $consequence,
             sprintf("Statements[0] is not ast.ExpressionStatement. got=%s", gettype($exp->Consequence->Statements[0]))
         );
-        if(!$this->_testIdentifier($consequence->Expression,'x')){
-            return  ;
+        if (!$this->_testIdentifier($consequence->Expression, 'x')) {
+            return;
         }
         /*
         // $this->assertNotEmpty($stack);
@@ -561,6 +612,7 @@ IN;
         */
 
     }
+
     public function testIfElseExpression()
     {
         $input = <<<IN
@@ -585,26 +637,26 @@ IN;
         $this->assertInstanceOf(IfExpression::class, $exp,
             sprintf("stmt is not IfExpression. got=%s", gettype($stmt->Expression))
         );
-        if(!$this->_testInfixExpression($exp->Condition,"x",'<','y')){
-            return  ;
+        if (!$this->_testInfixExpression($exp->Condition, "x", '<', 'y')) {
+            return;
         }
-        if(count($exp->Consequence->Statements) != 1){
+        if (count($exp->Consequence->Statements) != 1) {
             $this->assertTrue(false,
                 sprintf("consequence is not 1 statements. got=%d\n", count($exp->Consequence->Statements))
             );
         }
-        $consequence = $exp->Consequence->Statements[0] ;
+        $consequence = $exp->Consequence->Statements[0];
         // var_dump($exp->Consequence) ;
         $this->assertInstanceOf(ExpressionStatement::class, $consequence,
             sprintf("Statements[0] is not ast.ExpressionStatement. got=%s", gettype($exp->Consequence->Statements[0]))
         );
-        if(!$this->_testIdentifier($consequence->Expression,'x')){
-            return  ;
+        if (!$this->_testIdentifier($consequence->Expression, 'x')) {
+            return;
         }
         // $this->assertNotEmpty($stack);
         $this->assertNotNull($exp->Alternative,
-            sprintf("exp.Alternative.Statements was not nil. got=%s", var_export($exp->Alternative,true))
-            );
+            sprintf("exp.Alternative.Statements was not nil. got=%s", var_export($exp->Alternative, true))
+        );
 
     }
 
@@ -629,7 +681,7 @@ IN;
         );
 
         // 函数字面量特有的情况
-        $function = $stmt->Expression ;
+        $function = $stmt->Expression;
         $this->assertInstanceOf(FunctionLiteral::class, $function,
             sprintf("stmt.Expression is not ast.FunctionLiteral. got=%s", gettype($function))
         );
@@ -637,22 +689,90 @@ IN;
         $this->assertCount(2, $function->Parameters,
             sprintf("function literal parameters wrong. want 2, got=%d\n",
                 count($function->Parameters))
-            );
+        );
 
-        $this->_testLiteralExpression($function->Parameters[0],'x');
-        $this->_testLiteralExpression($function->Parameters[1],'y');
+        $this->_testLiteralExpression($function->Parameters[0], 'x');
+        $this->_testLiteralExpression($function->Parameters[1], 'y');
 
         $this->assertCount(1, $function->Body->Statements,
             sprintf("function.Body.Statements has not 1 statements. got=%d\n",
                 count($function->Body->Statements))
         );
 
-        $bodyStmt = $function->Body->Statements[0] ;
+        $bodyStmt = $function->Body->Statements[0];
         $this->assertInstanceOf(ExpressionStatement::class, $bodyStmt,
             sprintf("function body stmt is not ast.ExpressionStatement. got=%T", gettype($bodyStmt))
         );
 
-        $this->_testInfixExpression($bodyStmt->Expression, 'x','+','y');
+        $this->_testInfixExpression($bodyStmt->Expression, 'x', '+', 'y');
+
+    }
+
+    public function testFunctionParameterParsing()
+    {
+        $tests = [
+            ['input' => "fn() {};", 'expectedParams' => []],
+            ['input' => "fn(x){}", 'expectedParams' => ["x"]],
+            ['input' => "fn(x, y, z) {}", 'expectedParams' => ["x", "y", "z"]],
+        ];
+
+        foreach ($tests as $i => $tt) {
+            $l = Lexer::NewLexer($tt['input']);
+            $p = Parser::NewParser($l);
+            $program = $p->ParseProgram();
+            $this->checkParserErrors($p);
+
+            $stmt = $program->Statements[0];
+            $function = $stmt->Expression;
+
+            $this->assertEquals(count($function->Parameters), count($tt['expectedParams']),
+                sprintf("length parameters wrong. want %d, got=%d\n",
+                    count($tt['expectedParams']), count($function->Parameters))
+            );
+
+            foreach ($tt['expectedParams'] as $i => $ident) {
+                $this->_testLiteralExpression($function->Parameters[$i], $ident);
+            }
+        }
+    }
+
+    public function testCallExpressionParsing()
+    {
+        $input = <<<INPUT
+add(1, 2 * 3, 4 + 5);
+INPUT;
+
+        $l = Lexer::NewLexer($input);
+        $p = Parser::NewParser($l);
+        $program = $p->ParseProgram();
+        $this->checkParserErrors($p);
+
+        $this->assertCount(1, $program->Statements
+            , sprintf("program.Statements does not contain 1 statements. got=%d",
+                count($program->Statements))
+        );
+
+        $stmt = $program->Statements[0];
+        $this->assertInstanceOf(ExpressionStatement::class, $stmt,
+            sprintf("stmt not ExpressionStatement. got=%s", gettype($stmt))
+        );
+
+        // 特有测试
+        $exp = $stmt->Expression;
+        $this->assertInstanceOf(CallExpression::class, $exp,
+            sprintf("stmt.Expression is not ast.CallExpression. got=%s", gettype($exp))
+        );
+        if (!$this->_testIdentifier($exp->Function, 'add')) {
+            return;
+        }
+        $this->assertCount(3, $exp->Arguments
+            , sprintf("wrong length of arguments. got=%d",
+                count($exp->Arguments))
+        );
+
+        $this->_testLiteralExpression($exp->Arguments[0], 1);
+        $this->_testInfixExpression($exp->Arguments[1], 2, '*', 3);
+        $this->_testInfixExpression($exp->Arguments[2], 4, '+', 5);
 
     }
 

@@ -11,6 +11,7 @@ namespace monkey\parser;
 
 use monkey\ast\BlockStatement;
 use monkey\ast\Boolean;
+use monkey\ast\CallExpression;
 use monkey\ast\Expression;
 use monkey\ast\ExpressionStatement;
 use monkey\ast\FunctionLiteral;
@@ -52,6 +53,8 @@ class Parser
         TokenType::MINUS => self::SUM,
         TokenType::SLASH => self::PRODUCT,
         TokenType::ASTERISK => self::PRODUCT,
+
+        TokenType::LPAREN => self::CALL,
     ];
 
     /**
@@ -164,6 +167,8 @@ class Parser
         $p->registerInfix(TokenType::NOT_EQ, [$p, 'parseInfixExpression']);
         $p->registerInfix(TokenType::LT, [$p, 'parseInfixExpression']);
         $p->registerInfix(TokenType::GT, [$p, 'parseInfixExpression']);
+
+        $p->registerInfix(TokenType::LPAREN, [$p, 'parseCallExpression']);
 
 
         $p->nextToken();
@@ -321,31 +326,71 @@ class Parser
      */
     protected function parseFunctionParameters() //:Identifier[]
     {
-        $identifiers = [] ;
+        $identifiers = [];
+        if ($this->peekTokenIs(TokenType::RPAREN)) {
+            $this->nextToken();
+            return $identifiers;
+        }
+
+        $this->nextToken();
+        $ident = Identifier::CreateWith([
+            'Token' => $this->curToken, 'Value' => $this->curToken->Literal,
+        ]);
+        $identifiers[] = $ident;
+        while ($this->peekTokenIs(TokenType::COMMA)) {
+            $this->nextToken();
+            $this->nextToken();
+            $ident = Identifier::CreateWith([
+                'Token' => $this->curToken, 'Value' => $this->curToken->Literal,
+            ]);
+            $identifiers[] = $ident;
+        }
+
+        if (!$this->expectPeek(TokenType::RPAREN)) {
+            return null;
+        }
+        return $identifiers;
+
+    }
+
+    /**
+     * @param Expression $function
+     * @return Expression
+     */
+    protected function parseCallExpression(Expression $function) //:Expression
+    {
+        $exp = CallExpression::CreateWith([
+            'Token' => $this->curToken,
+            'Function' => $function
+        ]);
+        $exp->Arguments = $this->parseCallArguments();
+        return $exp;
+    }
+
+    /**
+     * @return Expression[]|array
+     */
+    protected function parseCallArguments() //:Expression[]
+    {
+        $args = [] ;
         if($this->peekTokenIs(TokenType::RPAREN)){
             $this->nextToken() ;
-            return $identifiers ;
+            return $args ;
         }
 
         $this->nextToken() ;
-        $ident = Identifier::CreateWith([
-           'Token'=>$this->curToken,'Value'=>$this->curToken->Literal ,
-        ]);
-        $identifiers[] = $ident ;
+        $args[] = $this->parseExpression(self::LOWEST ) ;
+
         while ($this->peekTokenIs(TokenType::COMMA)){
             $this->nextToken() ;
             $this->nextToken() ;
-            $ident = Identifier::CreateWith([
-               'Token'=>$this->curToken , 'Value'=>$this->curToken->Literal,
-            ]);
-            $identifiers[] = $ident ;
-        }
 
+            $args[] = $this->parseExpression(self::LOWEST);
+        }
         if(!$this->expectPeek(TokenType::RPAREN)){
             return null ;
         }
-        return $identifiers ;
-
+        return $args ;
     }
 
     /**
@@ -411,6 +456,9 @@ class Parser
             return null;
         }
 
+        $this->nextToken() ;
+        $stmt->Value = $this->parseExpression(self::LOWEST) ;
+
         for (; !$this->curTokenIs(TokenType::SEMICOLON);) {
             $this->nextToken();
         }
@@ -427,6 +475,7 @@ class Parser
         $stmt->Token = $this->curToken;
 
         $this->nextToken();
+        $stmt->ReturnValue = $this->parseExpression(self::LOWEST) ;
 
         for (; !$this->curTokenIs(TokenType::SEMICOLON);) {
             $this->nextToken();
