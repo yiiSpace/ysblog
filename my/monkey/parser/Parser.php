@@ -13,6 +13,7 @@ use monkey\ast\BlockStatement;
 use monkey\ast\Boolean;
 use monkey\ast\Expression;
 use monkey\ast\ExpressionStatement;
+use monkey\ast\FunctionLiteral;
 use monkey\ast\Identifier;
 use monkey\ast\IfExpression;
 use monkey\ast\InfixExpression;
@@ -153,6 +154,7 @@ class Parser
 
         $p->registerPrefix(TokenType::LPAREN, [$p, 'parseGroupedExpression']);
         $p->registerPrefix(TokenType::IF, [$p, 'parseIfExpression']);
+        $p->registerPrefix(TokenType::FUNCTION, [$p, 'parseFunctionLiteral']);
 
         $p->registerInfix(TokenType::PLUS, [$p, 'parseInfixExpression']);
         $p->registerInfix(TokenType::MINUS, [$p, 'parseInfixExpression']);
@@ -256,27 +258,94 @@ class Parser
     protected function parseIfExpression() // :Expression
     {
         $expression = IfExpression::CreateWith([
-           'Token'=>$this->curToken ,
+            'Token' => $this->curToken,
         ]);
 
-        if(!$this->expectPeek(TokenType::LPAREN)){
-            return null ;
+        if (!$this->expectPeek(TokenType::LPAREN)) {
+            return null;
         }
 
-        $this->nextToken() ;
+        $this->nextToken();
         $expression->Condition = $this->parseExpression(self::LOWEST);
 
-        if(!$this->expectPeek(TokenType::RPAREN)){
-            return null ;
+        if (!$this->expectPeek(TokenType::RPAREN)) {
+            return null;
         }
 
-        if(!$this->expectPeek(TokenType::LBRACE)){
-            return null ;
+        if (!$this->expectPeek(TokenType::LBRACE)) {
+            return null;
         }
 
         $expression->Consequence = $this->parseBlockStatement();
 
-        return $expression ;
+        // 解析else 语句
+        if ($this->peekTokenIs(TokenType::ELSE)) {
+            $this->nextToken();
+
+            if (!$this->expectPeek(TokenType::LBRACE)) {
+                return null;
+            }
+
+            $expression->Alternative = $this->parseBlockStatement();
+        }
+
+        return $expression;
+    }
+
+    /**
+     * @return Expression
+     */
+    protected function parseFunctionLiteral()// :Expression
+    {
+        $lit = FunctionLiteral::CreateWith([
+            'Token' => $this->curToken,
+        ]);
+
+        if (!$this->expectPeek(TokenType::LPAREN)) {
+            return null;
+        }
+
+        $lit->Parameters = $this->parseFunctionParameters();
+
+        if (!$this->expectPeek(TokenType::LBRACE)) {
+            return null;
+        }
+
+        $lit->Body = $this->parseBlockStatement();
+
+        return $lit;
+    }
+
+    /**
+     * @return array|Identifier[]
+     */
+    protected function parseFunctionParameters() //:Identifier[]
+    {
+        $identifiers = [] ;
+        if($this->peekTokenIs(TokenType::RPAREN)){
+            $this->nextToken() ;
+            return $identifiers ;
+        }
+
+        $this->nextToken() ;
+        $ident = Identifier::CreateWith([
+           'Token'=>$this->curToken,'Value'=>$this->curToken->Literal ,
+        ]);
+        $identifiers[] = $ident ;
+        while ($this->peekTokenIs(TokenType::COMMA)){
+            $this->nextToken() ;
+            $this->nextToken() ;
+            $ident = Identifier::CreateWith([
+               'Token'=>$this->curToken , 'Value'=>$this->curToken->Literal,
+            ]);
+            $identifiers[] = $ident ;
+        }
+
+        if(!$this->expectPeek(TokenType::RPAREN)){
+            return null ;
+        }
+        return $identifiers ;
+
     }
 
     /**
@@ -285,18 +354,18 @@ class Parser
     protected function parseBlockStatement() // :BlockStatement
     {
         $block = BlockStatement::CreateWith([
-           'Token'=>$this->curToken ,
+            'Token' => $this->curToken,
         ]);
-        $this->nextToken() ;
+        $this->nextToken();
 
-        while(!$this->curTokenIs(TokenType::RBRACE)){
-            $stmt = $this->parseStatement() ;
-            if($stmt){
-                $block->Statements[] = $stmt ;
+        while (!$this->curTokenIs(TokenType::RBRACE)) {
+            $stmt = $this->parseStatement();
+            if ($stmt) {
+                $block->Statements[] = $stmt;
             }
-            $this->nextToken() ;
+            $this->nextToken();
         }
-        return $block ;
+        return $block;
     }
 
     /**
