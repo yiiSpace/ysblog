@@ -7,6 +7,7 @@
  */
 namespace monkey\repl;
 
+use monkey\parser\Parser;
 use monkey\token\TokenType;
 use yii\helpers\Console;
 
@@ -25,11 +26,21 @@ function Start($in /*io.Reader*/ , $out /*io.Writer*/) {
      // print(__FUNCTION__) ;
     for(;true;){
       Console::stdout(PROMPT);
-      $line = Console::stdin() ;
+      $line = Console::stdin().PHP_EOL ;
       $l = \monkey\lexer\Lexer::NewLexer($line) ;
+      /*
       for($tok = $l->NextToken(); $tok->Type != TokenType::EOF; $tok = $l->NextToken()){
           printf("{ Type:%s Literal:%s } \n",$tok->Type, $tok->Literal) ;
       }
+      */
+      $p = Parser::NewParser($l) ;
+      $program = $p->ParseProgram() ;
+      if(count($p->Errors()) != 0){
+          printParserErrors($p->Errors());
+          continue ;
+      }
+      Console::stdout($program->String());
+      Console::stdout("\n") ;
     }
 
     /*
@@ -67,7 +78,13 @@ function Start($in /*io.Reader*/ , $out /*io.Writer*/) {
  * @param $out
  * @param $errors
  */
-function printParserErrors($out /*io.Writer*/, $errors  /*string[]*/) {
+function printParserErrors(/*$out io.Writer,*/ $errors  /*string[]*/) {
+    $out = '' ;
+    $out .= MONKEY_FACE ;
+    $out .=  "Woops! We ran into some monkye business here!\n";
+    $out .= "  parser errors:\n";
+    $out .= join("\n",$errors) ;
+    echo $out ;
     /*
     io.WriteString(out, MONKEY_FACE)
 	io.WriteString(out, "Woops! We ran into some monkye business here!\n")
