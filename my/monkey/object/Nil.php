@@ -8,6 +8,8 @@
 
 namespace monkey\object;
 
+use monkey\helpers\CreateWith;
+
 /**
  * Null 类型  由于在php7中Null 是关键字 不可以做类名所以命名为Nil
  *
@@ -16,6 +18,8 @@ namespace monkey\object;
  */
 class Nil  implements Object
 {
+
+    use CreateWith ;
 
     /**
      * @return string

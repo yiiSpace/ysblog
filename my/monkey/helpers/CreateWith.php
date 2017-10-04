@@ -8,12 +8,14 @@
 
 namespace monkey\helpers;
 
+
 /**
  * Trait CreateWith
  * @package monkey\helpers
  */
 trait CreateWith
 {
+
     /**
      * @param array $config
      * @return static
@@ -25,6 +27,9 @@ trait CreateWith
         foreach ($config as $attr => $val) {
             $obj->{$attr} = $val;
         }
+
+        ObjectStats::incrementObject(static::class) ;
+
         return $obj;
     }
 }

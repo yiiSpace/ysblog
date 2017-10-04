@@ -12,12 +12,44 @@ namespace monkey\evaluator;
 use monkey\ast\ExpressionStatement;
 use monkey\ast\IntegerLiteral;
 use monkey\ast\Node;
+use monkey\ast\PrefixExpression;
 use monkey\ast\Program;
+use monkey\ast\Statement;
+use monkey\object\Boolean;
 use monkey\object\Integer;
+use monkey\object\Nil;
 use monkey\object\Object;
+
+//use monkey\object\Object;
+
 
 class Evaluator
 {
+    /**
+     * @var Boolean
+     */
+    public static $TRUE;
+
+    /**
+     * @var Boolean
+     */
+    public static $FALSE;
+
+    /**
+     * @var Nil
+     */
+    public static $NULL;
+    /*
+    protected static function InitBooleans()
+    {
+        self::$TRUE = Boolean::CreateWith([
+            'Value' => true,
+        ]);
+        self::$FALSE = Boolean::CreateWith([
+            'Value' => false,
+        ]);
+    }
+    */
 
     /**
      * @param Node $node
@@ -38,12 +70,39 @@ class Evaluator
                     'Value' => $node->Value,
                 ]);
 
+            case $node instanceof \monkey\ast\Boolean:
+                /*
+                return Boolean::CreateWith([
+                    'Value' => $node->Value,
+                ]);
+                */
+                return static::nativeBoolToBooleanObject($node->Value);
+
+            case $node instanceof PrefixExpression:
+                $right = static::DoEval($node->Right);
+                return static::evalPrefixExpression($node->Operator, $right);
 
         }
         return null;
     }
 
-    public static function evalStatements($stmts = []): Object
+    /**
+     * @param $input
+     * @return Boolean
+     */
+    protected static function nativeBoolToBooleanObject($input): Boolean
+    {
+        if ($input) {
+            return static::$TRUE;
+        }
+        return static::$FALSE;
+    }
+
+    /**
+     * @param array|Statement[] $stmts
+     * @return Object
+     */
+    public static function evalStatements($stmts = []) // : Object
     {
         /** @var Object $result */
         $result = null;
@@ -54,4 +113,55 @@ class Evaluator
 
         return $result;
     }
+
+    /**
+     * @param string $operator
+     * @param Object $right
+     * @return Object|null
+     */
+    protected static function evalPrefixExpression($operator = '', $right) // :Object
+    {
+        switch ($operator) {
+            case '!':
+                return static::evalBangOperatorExpression($right);
+            default:
+                return self::$NULL;
+        }
+    }
+
+    /**
+     * @TODO 搞清楚php中的 ==  在左右值是对象时的行为（对比指针？）
+     *
+     * @param Object $right
+     * @return Object
+     */
+    protected static function evalBangOperatorExpression(Object $right) // :Object
+    {
+        switch ($right) {
+            case static::$TRUE:
+                return static::$FALSE;
+            case static::$FALSE:
+                return static::$TRUE;
+            case static::$NULL:
+                return static::$TRUE;
+            default:
+                return static::$FALSE;
+        }
+    }
 }
+
+(function () {
+    // 只实例化一次
+    // if (isset(Evaluator::$TRUE)) return;
+
+    Evaluator::$TRUE = Boolean::CreateWith([
+        'Value' => true,
+    ]);
+    Evaluator::$FALSE = Boolean::CreateWith([
+        'Value' => false,
+    ]);
+
+    Evaluator::$NULL = Nil::CreateWith();
+})();
+
+// InitBooleans();

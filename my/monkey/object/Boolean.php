@@ -32,6 +32,7 @@ class Boolean implements Object
      */
     public function Inspect(): string
     {
-        return sprintf("%s",gettype($this->Value)) ;
+        return $this->Value == true ? 'true':'false' ;
+       //  return sprintf("%s", $this->Value /*gettype($this->Value)*/) ;
     }
 }
