@@ -9,10 +9,12 @@
 namespace monkey\parser;
 
 
+use monkey\ast\BlockStatement;
 use monkey\ast\Boolean;
 use monkey\ast\Expression;
 use monkey\ast\ExpressionStatement;
 use monkey\ast\Identifier;
+use monkey\ast\IfExpression;
 use monkey\ast\InfixExpression;
 use monkey\ast\IntegerLiteral;
 use monkey\ast\LetStatement;
@@ -150,6 +152,7 @@ class Parser
         $p->registerPrefix(TokenType::FALSE, [$p, 'parseBoolean']);
 
         $p->registerPrefix(TokenType::LPAREN, [$p, 'parseGroupedExpression']);
+        $p->registerPrefix(TokenType::IF, [$p, 'parseIfExpression']);
 
         $p->registerInfix(TokenType::PLUS, [$p, 'parseInfixExpression']);
         $p->registerInfix(TokenType::MINUS, [$p, 'parseInfixExpression']);
@@ -245,6 +248,55 @@ class Parser
             return null;
         }
         return $exp;
+    }
+
+    /**
+     * @return Expression
+     */
+    protected function parseIfExpression() // :Expression
+    {
+        $expression = IfExpression::CreateWith([
+           'Token'=>$this->curToken ,
+        ]);
+
+        if(!$this->expectPeek(TokenType::LPAREN)){
+            return null ;
+        }
+
+        $this->nextToken() ;
+        $expression->Condition = $this->parseExpression(self::LOWEST);
+
+        if(!$this->expectPeek(TokenType::RPAREN)){
+            return null ;
+        }
+
+        if(!$this->expectPeek(TokenType::LBRACE)){
+            return null ;
+        }
+
+        $expression->Consequence = $this->parseBlockStatement();
+
+        return $expression ;
+    }
+
+    /**
+     * @return BlockStatement
+     */
+    protected function parseBlockStatement() // :BlockStatement
+    {
+        $block = BlockStatement::CreateWith([
+           'Token'=>$this->curToken ,
+        ]);
+        $this->nextToken() ;
+
+        while(!$this->curTokenIs(TokenType::RBRACE)){
+            $stmt = $this->parseStatement() ;
+            if($stmt){
+                $block->Statements[] = $stmt ;
+            }
+            $this->nextToken() ;
+        }
+        return $block ;
     }
 
     /**

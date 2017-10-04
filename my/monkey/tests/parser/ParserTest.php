@@ -13,6 +13,7 @@ use monkey\ast\Boolean;
 use monkey\ast\Expression;
 use monkey\ast\ExpressionStatement;
 use monkey\ast\Identifier;
+use monkey\ast\IfExpression;
 use monkey\ast\InfixExpression;
 use monkey\ast\IntegerLiteral;
 use monkey\ast\PrefixExpression;
@@ -511,6 +512,53 @@ IN;
 
     }
 
+    public function testIfExpression()
+    {
+        $input = <<<IN
+if (x < y) { x }
+IN;
+        $l = Lexer::NewLexer($input);
+        $p = Parser::NewParser($l);
+        $program = $p->ParseProgram();
+        $this->checkParserErrors($p);
+
+        $this->assertCount(1, $program->Statements
+            , sprintf("program.Statements does not contain 1 statements. got=%d",
+                count($program->Statements))
+        );
+
+        $stmt = $program->Statements[0];
+        $this->assertInstanceOf(ExpressionStatement::class, $stmt,
+            sprintf("stmt not ExpressionStatement. got=%s", gettype($stmt))
+        );
+
+        $exp = $stmt->Expression;
+        $this->assertInstanceOf(IfExpression::class, $exp,
+            sprintf("stmt is not IfExpression. got=%s", gettype($stmt->Expression))
+        );
+        if(!$this->_testInfixExpression($exp->Condition,"x",'<','y')){
+            return  ;
+        }
+        if(count($exp->Consequence->Statements) != 1){
+            $this->assertTrue(false,
+                sprintf("consequence is not 1 statements. got=%d\n", count($exp->Consequence->Statements))
+            );
+        }
+        $consequence = $exp->Consequence->Statements[0] ;
+        // var_dump($exp->Consequence) ;
+        $this->assertInstanceOf(ExpressionStatement::class, $consequence,
+            sprintf("Statements[0] is not ast.ExpressionStatement. got=%s", gettype($exp->Consequence->Statements[0]))
+        );
+        if(!$this->_testIdentifier($consequence->Expression,'x')){
+            return  ;
+        }
+        // $this->assertNotEmpty($stack);
+        $this->assertNotNull($exp->Alternative,
+            sprintf("exp.Alternative.Statements was not nil. got=%s", var_export($exp->Alternative,true))
+            );
+
+    }
+
     /**
      * @param Expression $il integerLiteral
      * @param int $value
@@ -613,7 +661,7 @@ IN;
     {
         $opExp = $exp;
         $this->assertInstanceOf(InfixExpression::class, $exp,
-            sprintf("exp is not InfixExpression. got=%s(%s)", gettype($exp), $exp)
+            sprintf("exp is not InfixExpression. got=%s(%s)", gettype($exp), $exp->String())
         );
         if (!$this->_testLiteralExpression($opExp->Left, $left)) {
             return false;
