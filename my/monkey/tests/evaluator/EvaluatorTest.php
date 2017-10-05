@@ -11,6 +11,7 @@ namespace yiiunit\extensions\monkey\evaluator;
 
 use monkey\evaluator\Evaluator;
 use monkey\object\Boolean;
+use monkey\object\Error;
 use monkey\object\Integer;
 use monkey\object\Object;
 use monkey\parser\Parser;
@@ -90,15 +91,30 @@ class EvaluatorTest extends TestCase
             ["if (1 < 2) { 10 } else { 20 }", 10],
         ];
 
-        foreach ($tests as $_=>$tt){
+        foreach ($tests as $_ => $tt) {
             $evaluated = $this->_testEval($tt[0]);
             $integer = $tt[1];
             $type = gettype($integer);
-            if($type == 'integer'){
-                $this->_testIntegerObject($evaluated,$integer) ;
-            }else{
-                $this->_testNullObject($evaluated) ;
+            if ($type == 'integer') {
+                $this->_testIntegerObject($evaluated, $integer);
+            } else {
+                $this->_testNullObject($evaluated);
             }
+        }
+    }
+
+    public function testReturnStatements()
+    {
+        $tests = [
+            ["return 10;", 10],
+            ["return 10; 9;", 10],
+            ["return 2 * 5; 9;", 10],
+            ["9; return 2 * 5; 9;", 10],
+        ];
+
+        foreach ($tests as $_ => $tt) {
+            $evaluated = $this->_testEval($tt[0]);
+            $this->_testIntegerObject($evaluated, $tt[1]);
         }
     }
 
@@ -106,14 +122,15 @@ class EvaluatorTest extends TestCase
      * @param \monkey\object\Object $obj
      * @return bool
      */
-    protected function _testNullObject($obj) :bool {
-       if($obj != Evaluator::$NULL){
-           $this->assertTrue(false,
-               sprintf("object is not NULL. got=%s (%s)", gettype($obj), $obj)
-           );
-           return false ;
-       }
-       return true ;
+    protected function _testNullObject($obj): bool
+    {
+        if ($obj != Evaluator::$NULL) {
+            $this->assertTrue(false,
+                sprintf("object is not NULL. got=%s (%s)", gettype($obj), $obj)
+            );
+            return false;
+        }
+        return true;
     }
 
     public function testBangOperator()
@@ -194,5 +211,60 @@ class EvaluatorTest extends TestCase
         }
 
         return true;
+    }
+
+    public function testErrorHandling()
+    {
+        $tests = [
+            [
+                "5 + true;",
+                "type mismatch: INTEGER + BOOLEAN",
+            ],
+            [
+                "5 + true; 5;",
+                "type mismatch: INTEGER + BOOLEAN",
+            ],
+            [
+                "-true",
+                "unknown operator: -BOOLEAN",
+            ],
+            [
+                "true + false;",
+                "unknown operator: BOOLEAN + BOOLEAN",
+            ],
+            [
+                "5; true + false; 5",
+                "unknown operator: BOOLEAN + BOOLEAN",
+            ],
+            [
+                "if (10 > 1) {true + false; }",
+                "unknown operator: BOOLEAN + BOOLEAN",
+            ],
+            [
+                "if (10 > 1) {
+if (10 > 1) {
+return true + false;
+}
+return 1;
+}",
+                "unknown operator: BOOLEAN + BOOLEAN",
+            ],
+        ];
+
+        foreach ($tests as $_=>$tt){
+            $evaluated = $this->_testEval($tt[0]);
+
+            $errObj = $evaluated ;
+            if(!$errObj instanceof Error){
+                $this->assertTrue(false,
+                    sprintf("no error object returned. got=%s(%s)", gettype($errObj), var_export($errObj,true))
+                );
+                continue ;
+            }
+            $this->assertEquals($errObj->Message, $tt[1],
+                sprintf("wrong error message. expected=%s, got=%s",
+                    $tt[1], $errObj->Message)
+            );
+        }
     }
 }

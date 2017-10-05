@@ -29,4 +29,13 @@ class ObjectType
      */
     const NULL_OBJ = "NULL" ;
 
+    /**
+     * @var string
+     */
+    const RETURN_VALUE_OBJ = "RETURN_VALUE" ;
+
+    /**
+     * @var  string
+     */
+    const ERROR_OBJ = "ERROR" ;
 }

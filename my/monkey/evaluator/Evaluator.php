@@ -17,12 +17,16 @@ use monkey\ast\IntegerLiteral;
 use monkey\ast\Node;
 use monkey\ast\PrefixExpression;
 use monkey\ast\Program;
+use monkey\ast\ReturnStatement;
 use monkey\ast\Statement;
 use monkey\object\Boolean;
+use monkey\object\Error;
 use monkey\object\Integer;
 use monkey\object\Nil;
 use monkey\object\Object;
 use monkey\object\ObjectType;
+use monkey\object\ReturnValue;
+use Symfony\Component\ExpressionLanguage\Tests\Node\Obj;
 
 //use monkey\object\Object;
 
@@ -64,7 +68,7 @@ class Evaluator
         switch (true) {
 
             case $node instanceof Program:
-                return self::evalStatements($node->Statements);
+                return self::evalProgram($node);
 
             case $node instanceof ExpressionStatement:
                 return self::DoEval($node->Expression);
@@ -84,17 +88,34 @@ class Evaluator
 
             case $node instanceof PrefixExpression:
                 $right = static::DoEval($node->Right);
+                if(static::isError($right)){
+                    return $right ;
+                }
                 return static::evalPrefixExpression($node->Operator, $right);
 
             case $node instanceof InfixExpression:
                 $left = static::DoEval($node->Left);
                 $right = static::DoEval($node->Right);
+
+                if(static::isError($left)){
+                    return $left ;
+                }
+                if(static::isError($right)){
+                    return $right ;
+                }
                 return static::evalInfixExpression($node->Operator, $left, $right);
 
             case $node instanceof BlockStatement:
-                return static::evalStatements($node->Statements);
+                return static::evalBlockStatement($node);
             case $node instanceof IfExpression:
                 return static::evalIfExpression($node);
+
+            case  $node instanceof ReturnStatement:
+                $val = static::DoEval($node->ReturnValue);
+                if(static::isError($val)){
+                    return $val ;
+                }
+                return ReturnValue::CreateWith(['Value' => $val]);
         }
         return null;
     }
@@ -118,6 +139,11 @@ class Evaluator
     protected static function evalIfExpression($ie) // :Object
     {
         $condition = static::DoEval($ie->Condition);
+
+        if(static::isError($condition)){
+            return $condition ;
+        }
+
         if (static::isTruthy($condition)) {
             return static::DoEval($ie->Consequence);
         } elseif ($ie->Alternative != null) {
@@ -152,12 +178,68 @@ class Evaluator
     public static function evalStatements($stmts = []) // : Object
     {
         /** @var Object $result */
-        $result = null;
+        $result = static::$NULL;
 
         foreach ($stmts as $stmt) {
             $result = static::DoEval($stmt);
+            if ($result instanceof ReturnValue) {
+                return $result->Value;
+            }
         }
 
+        return $result;
+    }
+
+    /**
+     * @param Program $program
+     * @return Nil|Object
+     */
+    public static function evalProgram(Program $program) // : Object
+    {
+        /** @var Object $result */
+        $result = static::$NULL;
+
+        foreach ($program->Statements as $_ => $statement) {
+            $result = static::DoEval($statement);
+
+            /*
+            if ($result instanceof ReturnValue) {
+                return $result->Value;
+            }
+            */
+            switch (true) {
+                case $result instanceof ReturnValue:
+                    return $result->Value;
+                case $result instanceof Error:
+                    return $result;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param BlockStatement $block
+     * @return \monkey\object\Object
+     */
+    protected static function evalBlockStatement(BlockStatement $block)// :Object
+    {
+        /** @var  \monkey\object\Object $result */
+        $result = null;
+        foreach ($block->Statements as $statement) {
+            $result = static::DoEval($statement);
+            /*
+            if ($result != null && $result->Type() == ObjectType::RETURN_VALUE_OBJ) {
+                return $result;
+            }
+            */
+            if($result != null){
+                $rt = $result->Type();
+                if($rt == ObjectType::RETURN_VALUE_OBJ || $rt == ObjectType::ERROR_OBJ){
+                    return $result ;
+                }
+            }
+        }
         return $result;
     }
 
@@ -173,8 +255,12 @@ class Evaluator
                 return static::evalBangOperatorExpression($right);
             case '-':
                 return static::evalMinusPrefixOperatorExpression($right);
+            /*
+             default:
+                 return self::$NULL;
+            */
             default:
-                return self::$NULL;
+                return static::newError("unknown operator: %s%s", $operator, $right->Type());
         }
     }
 
@@ -193,9 +279,16 @@ class Evaluator
                 return static::nativeBoolToBooleanObject($left == $right);
             case $operator == '!=':
                 return static::nativeBoolToBooleanObject($left != $right);
-
+            /*
+           default:
+               return static::$NULL;
+            */
+            case $left->Type() != $right->Type():
+                return static::newError("type mismatch: %s %s %s",
+                    $left->Type(), $operator, $right->Type());
             default:
-                return static::$NULL;
+                return static::newError("unknown operator: %s %s %s",
+                    $left->Type(), $operator, $right->Type());
         }
     }
 
@@ -230,7 +323,9 @@ class Evaluator
                 return static::nativeBoolToBooleanObject($leftVal != $rightVal);
 
             default:
-                return static::$NULL;
+                // return static::$NULL;
+                return static::newError("unknown operator: %s %s %s",
+                    $left->Type(), $operator, $right->Type());
         }
     }
 
@@ -261,7 +356,8 @@ class Evaluator
     protected static function evalMinusPrefixOperatorExpression($right) // :Object
     {
         if ($right->Type() != ObjectType::INTEGER_OBJ) {
-            return static::$NULL;
+            //  return static::$NULL;
+            return static::newError("unknown operator: -%s", $right->Type());
         }
         if ($right instanceof Integer) {
             $value = $right->Value;
@@ -270,6 +366,31 @@ class Evaluator
             ]);
         }
 
+    }
+
+    /**
+     * @param string $format
+     * @param array ...$a 始于php5.6 开始支持可变函数参数 内部用数组形式引用 ;在函数调用时候 也可以用此形式 ...$params 展开参数列表
+     * @return Error
+     */
+    protected static function newError(string $format = '', ...$a): Error
+    {
+        // $p = array_unshift($a,$format) ;
+        return Error::CreateWith([
+            'Message' => sprintf($format, ...$a)// call_user_func_array('sprintf',$a) // sprintf($format,$a)
+        ]);
+    }
+
+    /**
+     * @param \monkey\object\Object $obj
+     * @return bool
+     */
+    protected static function isError( $obj):bool
+    {
+        if($obj != null){
+            return $obj->Type() == ObjectType::ERROR_OBJ ;
+        }
+        return false ;
     }
 }
 
