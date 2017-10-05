@@ -11,6 +11,7 @@ namespace yiiunit\extensions\monkey\evaluator;
 
 use monkey\evaluator\Evaluator;
 use monkey\object\Boolean;
+use monkey\object\Environment;
 use monkey\object\Error;
 use monkey\object\Integer;
 use monkey\object\Object;
@@ -159,8 +160,9 @@ class EvaluatorTest extends TestCase
         $l = \monkey\lexer\Lexer::NewLexer($input);
         $p = Parser::NewParser($l);
         $program = $p->ParseProgram();
+        $env = Environment::NewEnvironment() ;
 
-        return Evaluator::DoEval($program);
+        return Evaluator::DoEval($program,$env);
     }
 
     /**
@@ -249,22 +251,40 @@ return 1;
 }",
                 "unknown operator: BOOLEAN + BOOLEAN",
             ],
+            [
+                "foobar",
+                "identifier not found: foobar",
+            ]
         ];
 
-        foreach ($tests as $_=>$tt){
+        foreach ($tests as $_ => $tt) {
             $evaluated = $this->_testEval($tt[0]);
 
-            $errObj = $evaluated ;
-            if(!$errObj instanceof Error){
+            $errObj = $evaluated;
+            if (!$errObj instanceof Error) {
                 $this->assertTrue(false,
-                    sprintf("no error object returned. got=%s(%s)", gettype($errObj), var_export($errObj,true))
+                    sprintf("no error object returned. got=%s(%s)", gettype($errObj), var_export($errObj, true))
                 );
-                continue ;
+                continue;
             }
             $this->assertEquals($errObj->Message, $tt[1],
                 sprintf("wrong error message. expected=%s, got=%s",
                     $tt[1], $errObj->Message)
             );
+        }
+    }
+
+    public function testLetStatements()
+    {
+        $tests = [
+            ["let a = 5; a;", 5],
+            ["let a = 5 * 5; a;", 25],
+            ["let a = 5; let b = a; b;", 5],
+            ["let a = 5; let b = a; let c = a + b + 5; c;", 15],
+        ];
+
+        foreach ($tests as $_=>$tt){
+            $this->_testIntegerObject($this->_testEval($tt[0]),$tt[1]);
         }
     }
 }

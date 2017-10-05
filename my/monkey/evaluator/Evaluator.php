@@ -11,15 +11,18 @@ namespace monkey\evaluator;
 
 use monkey\ast\BlockStatement;
 use monkey\ast\ExpressionStatement;
+use monkey\ast\Identifier;
 use monkey\ast\IfExpression;
 use monkey\ast\InfixExpression;
 use monkey\ast\IntegerLiteral;
+use monkey\ast\LetStatement;
 use monkey\ast\Node;
 use monkey\ast\PrefixExpression;
 use monkey\ast\Program;
 use monkey\ast\ReturnStatement;
 use monkey\ast\Statement;
 use monkey\object\Boolean;
+use monkey\object\Environment;
 use monkey\object\Error;
 use monkey\object\Integer;
 use monkey\object\Nil;
@@ -61,17 +64,18 @@ class Evaluator
 
     /**
      * @param Node $node
-     * @return \monkey\object\Object
+     * @param Environment $env
+     * @return Object
      */
-    public static function DoEval(Node $node) // :Object
+    public static function DoEval(Node $node, Environment $env) // :Object
     {
         switch (true) {
 
             case $node instanceof Program:
-                return self::evalProgram($node);
+                return self::evalProgram($node, $env);
 
             case $node instanceof ExpressionStatement:
-                return self::DoEval($node->Expression);
+                return self::DoEval($node->Expression, $env);
 
             case $node instanceof IntegerLiteral :
                 return Integer::CreateWith([
@@ -87,35 +91,44 @@ class Evaluator
                 return static::nativeBoolToBooleanObject($node->Value);
 
             case $node instanceof PrefixExpression:
-                $right = static::DoEval($node->Right);
-                if(static::isError($right)){
-                    return $right ;
+                $right = static::DoEval($node->Right, $env);
+                if (static::isError($right)) {
+                    return $right;
                 }
                 return static::evalPrefixExpression($node->Operator, $right);
 
             case $node instanceof InfixExpression:
-                $left = static::DoEval($node->Left);
-                $right = static::DoEval($node->Right);
-
-                if(static::isError($left)){
-                    return $left ;
+                $left = static::DoEval($node->Left, $env);
+                if (static::isError($left)) {
+                    return $left;
                 }
-                if(static::isError($right)){
-                    return $right ;
+                $right = static::DoEval($node->Right, $env);
+                if (static::isError($right)) {
+                    return $right;
                 }
                 return static::evalInfixExpression($node->Operator, $left, $right);
 
             case $node instanceof BlockStatement:
-                return static::evalBlockStatement($node);
+                return static::evalBlockStatement($node, $env);
             case $node instanceof IfExpression:
-                return static::evalIfExpression($node);
+                return static::evalIfExpression($node, $env);
 
             case  $node instanceof ReturnStatement:
-                $val = static::DoEval($node->ReturnValue);
-                if(static::isError($val)){
-                    return $val ;
+                $val = static::DoEval($node->ReturnValue, $env);
+                if (static::isError($val)) {
+                    return $val;
                 }
                 return ReturnValue::CreateWith(['Value' => $val]);
+
+            case $node instanceof LetStatement:
+                $val = static::DoEval($node->Value, $env);
+                if (static::isError($val)) {
+                    return $val;
+                }
+                return $env->Set($node->Name->Value, $val);
+
+            case $node instanceof Identifier:
+                return static::evalIdentifier($node, $env);
         }
         return null;
     }
@@ -136,18 +149,18 @@ class Evaluator
      * @param IfExpression $ie
      * @return \monkey\object\Object
      */
-    protected static function evalIfExpression($ie) // :Object
+    protected static function evalIfExpression($ie, Environment $env) // :Object
     {
-        $condition = static::DoEval($ie->Condition);
+        $condition = static::DoEval($ie->Condition, $env);
 
-        if(static::isError($condition)){
-            return $condition ;
+        if (static::isError($condition)) {
+            return $condition;
         }
 
         if (static::isTruthy($condition)) {
-            return static::DoEval($ie->Consequence);
+            return static::DoEval($ie->Consequence, $env);
         } elseif ($ie->Alternative != null) {
-            return static::DoEval($ie->Alternative);
+            return static::DoEval($ie->Alternative, $env);
         } else {
             return static::$NULL;
         }
@@ -192,15 +205,16 @@ class Evaluator
 
     /**
      * @param Program $program
+     * @param Environment $env
      * @return Nil|Object
      */
-    public static function evalProgram(Program $program) // : Object
+    public static function evalProgram(Program $program, Environment $env) // : Object
     {
         /** @var Object $result */
         $result = static::$NULL;
 
         foreach ($program->Statements as $_ => $statement) {
-            $result = static::DoEval($statement);
+            $result = static::DoEval($statement, $env);
 
             /*
             if ($result instanceof ReturnValue) {
@@ -219,24 +233,39 @@ class Evaluator
     }
 
     /**
-     * @param BlockStatement $block
+     * @param Identifier $node
+     * @param Environment $env
      * @return \monkey\object\Object
      */
-    protected static function evalBlockStatement(BlockStatement $block)// :Object
+    protected static function evalIdentifier(Identifier $node, Environment $env) // :Object
+    {
+        if (!$env->Exists($node->Value)) {
+            return static::newError("identifier not found: " . $node->Value);
+        }
+        $val = $env->Get($node->Value);
+        return $val;
+    }
+
+    /**
+     * @param BlockStatement $block
+     * @param Environment $env
+     * @return Object
+     */
+    protected static function evalBlockStatement(BlockStatement $block, Environment $env)// :Object
     {
         /** @var  \monkey\object\Object $result */
         $result = null;
         foreach ($block->Statements as $statement) {
-            $result = static::DoEval($statement);
+            $result = static::DoEval($statement, $env);
             /*
             if ($result != null && $result->Type() == ObjectType::RETURN_VALUE_OBJ) {
                 return $result;
             }
             */
-            if($result != null){
+            if ($result != null) {
                 $rt = $result->Type();
-                if($rt == ObjectType::RETURN_VALUE_OBJ || $rt == ObjectType::ERROR_OBJ){
-                    return $result ;
+                if ($rt == ObjectType::RETURN_VALUE_OBJ || $rt == ObjectType::ERROR_OBJ) {
+                    return $result;
                 }
             }
         }
@@ -385,12 +414,12 @@ class Evaluator
      * @param \monkey\object\Object $obj
      * @return bool
      */
-    protected static function isError( $obj):bool
+    protected static function isError($obj): bool
     {
-        if($obj != null){
-            return $obj->Type() == ObjectType::ERROR_OBJ ;
+        if ($obj != null) {
+            return $obj->Type() == ObjectType::ERROR_OBJ;
         }
-        return false ;
+        return false;
     }
 }
 

@@ -10,6 +10,7 @@ namespace monkey\repl;
 
 use monkey\evaluator\Evaluator;
 use monkey\helpers\ObjectStats;
+use monkey\object\Environment;
 use monkey\parser\Parser;
 use monkey\token\TokenType;
 use yii\helpers\Console;
@@ -40,6 +41,7 @@ EOD;
  */
 function Start($in /*io.Reader*/, $out /*io.Writer*/)
 {
+    $env = Environment::NewEnvironment() ;
     // print(__FUNCTION__) ;
     for (; true;) {
         Console::stdout(PROMPT);
@@ -69,7 +71,7 @@ function Start($in /*io.Reader*/, $out /*io.Writer*/)
         }
         // Console::stdout($program->String());
 
-        $evaluated = Evaluator::DoEval($program);
+        $evaluated = Evaluator::DoEval($program ,$env);
         if ($evaluated != null) {
             Console::output($evaluated->Inspect());
         }
