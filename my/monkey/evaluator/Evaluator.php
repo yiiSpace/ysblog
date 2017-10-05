@@ -10,6 +10,7 @@ namespace monkey\evaluator;
 
 
 use monkey\ast\ExpressionStatement;
+use monkey\ast\InfixExpression;
 use monkey\ast\IntegerLiteral;
 use monkey\ast\Node;
 use monkey\ast\PrefixExpression;
@@ -19,6 +20,7 @@ use monkey\object\Boolean;
 use monkey\object\Integer;
 use monkey\object\Nil;
 use monkey\object\Object;
+use monkey\object\ObjectType;
 
 //use monkey\object\Object;
 
@@ -82,6 +84,11 @@ class Evaluator
                 $right = static::DoEval($node->Right);
                 return static::evalPrefixExpression($node->Operator, $right);
 
+            case $node instanceof InfixExpression:
+                $left = static::DoEval($node->Left);
+                $right = static::DoEval($node->Right);
+                return static::evalInfixExpression($node->Operator ,$left,$right) ;
+
         }
         return null;
     }
@@ -124,8 +131,51 @@ class Evaluator
         switch ($operator) {
             case '!':
                 return static::evalBangOperatorExpression($right);
+            case '-':
+                return static::evalMinusPrefixOperatorExpression($right);
             default:
                 return self::$NULL;
+        }
+    }
+
+    /**
+     * @param string $operator
+     * @param \monkey\object\Object $left
+     * @param \monkey\object\Object $right
+     * @return \monkey\object\Object
+     */
+    protected static function evalInfixExpression($operator='',$left,$right) // :Object
+    {
+        switch (true){
+            case $left->Type() == ObjectType::INTEGER_OBJ && $right->Type() == ObjectType::INTEGER_OBJ:
+                return static::evalIntegerInfixExpression($operator,$left,$right);
+
+            default:
+                return static::$NULL ;
+        }
+    }
+    /**
+     * @param string $operator
+     * @param \monkey\object\Object $left
+     * @param \monkey\object\Object $right
+     * @return \monkey\object\Object
+     */
+    protected static function evalIntegerInfixExpression($operator='',$left,$right)
+    {
+        $leftVal = $left->Value ;
+        $rightVal = $right->Value ;
+
+        switch ($operator){
+            case '+':
+                return Integer::CreateWith(['Value'=>$leftVal + $rightVal]) ;
+            case '-':
+                return Integer::CreateWith(['Value'=>$leftVal - $rightVal]) ;
+            case '*':
+                return Integer::CreateWith(['Value'=>$leftVal * $rightVal]) ;
+            case '/':
+                return Integer::CreateWith(['Value'=>$leftVal / $rightVal]) ;
+            default:
+                return static::$NULL ;
         }
     }
 
@@ -147,6 +197,24 @@ class Evaluator
             default:
                 return static::$FALSE;
         }
+    }
+
+    /**
+     * @param \monkey\object\Object $right
+     * @return Object
+     */
+    protected static function evalMinusPrefixOperatorExpression($right) // :Object
+    {
+        if ($right->Type() != ObjectType::INTEGER_OBJ) {
+            return static::$NULL;
+        }
+        if ($right instanceof Integer) {
+            $value = $right->Value;
+            return Integer::CreateWith([
+                'Value' => -$value
+            ]);
+        }
+
     }
 }
 
