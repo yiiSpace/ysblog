@@ -78,6 +78,44 @@ class EvaluatorTest extends TestCase
         }
     }
 
+    public function testIfElseExpression()
+    {
+        $tests = [
+            ["if (true) { 10 }", 10],
+            ["if (false) { 10 }", null],
+            ["if (1) { 10 }", 10],
+            ["if (1 < 2) { 10 }", 10],
+            ["if (1 > 2) { 10 }", null],
+            ["if (1 > 2) { 10 } else { 20 }", 20],
+            ["if (1 < 2) { 10 } else { 20 }", 10],
+        ];
+
+        foreach ($tests as $_=>$tt){
+            $evaluated = $this->_testEval($tt[0]);
+            $integer = $tt[1];
+            $type = gettype($integer);
+            if($type == 'integer'){
+                $this->_testIntegerObject($evaluated,$integer) ;
+            }else{
+                $this->_testNullObject($evaluated) ;
+            }
+        }
+    }
+
+    /**
+     * @param \monkey\object\Object $obj
+     * @return bool
+     */
+    protected function _testNullObject($obj) :bool {
+       if($obj != Evaluator::$NULL){
+           $this->assertTrue(false,
+               sprintf("object is not NULL. got=%s (%s)", gettype($obj), $obj)
+           );
+           return false ;
+       }
+       return true ;
+    }
+
     public function testBangOperator()
     {
         $tests = [

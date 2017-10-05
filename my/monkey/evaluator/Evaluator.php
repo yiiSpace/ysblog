@@ -9,7 +9,9 @@
 namespace monkey\evaluator;
 
 
+use monkey\ast\BlockStatement;
 use monkey\ast\ExpressionStatement;
+use monkey\ast\IfExpression;
 use monkey\ast\InfixExpression;
 use monkey\ast\IntegerLiteral;
 use monkey\ast\Node;
@@ -89,6 +91,10 @@ class Evaluator
                 $right = static::DoEval($node->Right);
                 return static::evalInfixExpression($node->Operator, $left, $right);
 
+            case $node instanceof BlockStatement:
+                return static::evalStatements($node->Statements);
+            case $node instanceof IfExpression:
+                return static::evalIfExpression($node);
         }
         return null;
     }
@@ -103,6 +109,40 @@ class Evaluator
             return static::$TRUE;
         }
         return static::$FALSE;
+    }
+
+    /**
+     * @param IfExpression $ie
+     * @return \monkey\object\Object
+     */
+    protected static function evalIfExpression($ie) // :Object
+    {
+        $condition = static::DoEval($ie->Condition);
+        if (static::isTruthy($condition)) {
+            return static::DoEval($ie->Consequence);
+        } elseif ($ie->Alternative != null) {
+            return static::DoEval($ie->Alternative);
+        } else {
+            return static::$NULL;
+        }
+    }
+
+    /**
+     * @param \monkey\object\Object $obj
+     * @return bool
+     */
+    protected static function isTruthy($obj): bool
+    {
+        switch ($obj) {
+            case static::$NULL:
+                return false;
+            case static::$TRUE:
+                return true;
+            case static::$FALSE:
+                return false;
+            default:
+                return true;
+        }
     }
 
     /**
@@ -150,9 +190,9 @@ class Evaluator
             case $left->Type() == ObjectType::INTEGER_OBJ && $right->Type() == ObjectType::INTEGER_OBJ:
                 return static::evalIntegerInfixExpression($operator, $left, $right);
             case $operator == '==':
-                return static ::nativeBoolToBooleanObject($left == $right);
+                return static::nativeBoolToBooleanObject($left == $right);
             case $operator == '!=':
-                return static::nativeBoolToBooleanObject($left != $right) ;
+                return static::nativeBoolToBooleanObject($left != $right);
 
             default:
                 return static::$NULL;
