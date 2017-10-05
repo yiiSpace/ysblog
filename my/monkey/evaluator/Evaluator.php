@@ -87,7 +87,7 @@ class Evaluator
             case $node instanceof InfixExpression:
                 $left = static::DoEval($node->Left);
                 $right = static::DoEval($node->Right);
-                return static::evalInfixExpression($node->Operator ,$left,$right) ;
+                return static::evalInfixExpression($node->Operator, $left, $right);
 
         }
         return null;
@@ -144,38 +144,53 @@ class Evaluator
      * @param \monkey\object\Object $right
      * @return \monkey\object\Object
      */
-    protected static function evalInfixExpression($operator='',$left,$right) // :Object
+    protected static function evalInfixExpression($operator = '', $left, $right) // :Object
     {
-        switch (true){
+        switch (true) {
             case $left->Type() == ObjectType::INTEGER_OBJ && $right->Type() == ObjectType::INTEGER_OBJ:
-                return static::evalIntegerInfixExpression($operator,$left,$right);
+                return static::evalIntegerInfixExpression($operator, $left, $right);
+            case $operator == '==':
+                return static ::nativeBoolToBooleanObject($left == $right);
+            case $operator == '!=':
+                return static::nativeBoolToBooleanObject($left != $right) ;
 
             default:
-                return static::$NULL ;
+                return static::$NULL;
         }
     }
+
     /**
      * @param string $operator
      * @param \monkey\object\Object $left
      * @param \monkey\object\Object $right
      * @return \monkey\object\Object
      */
-    protected static function evalIntegerInfixExpression($operator='',$left,$right)
+    protected static function evalIntegerInfixExpression($operator = '', $left, $right)
     {
-        $leftVal = $left->Value ;
-        $rightVal = $right->Value ;
+        $leftVal = $left->Value;
+        $rightVal = $right->Value;
 
-        switch ($operator){
+        switch ($operator) {
             case '+':
-                return Integer::CreateWith(['Value'=>$leftVal + $rightVal]) ;
+                return Integer::CreateWith(['Value' => $leftVal + $rightVal]);
             case '-':
-                return Integer::CreateWith(['Value'=>$leftVal - $rightVal]) ;
+                return Integer::CreateWith(['Value' => $leftVal - $rightVal]);
             case '*':
-                return Integer::CreateWith(['Value'=>$leftVal * $rightVal]) ;
+                return Integer::CreateWith(['Value' => $leftVal * $rightVal]);
             case '/':
-                return Integer::CreateWith(['Value'=>$leftVal / $rightVal]) ;
+                return Integer::CreateWith(['Value' => $leftVal / $rightVal]);
+
+            case '<':
+                return static::nativeBoolToBooleanObject($leftVal < $rightVal);
+            case '>':
+                return static::nativeBoolToBooleanObject($leftVal > $rightVal);
+            case '==':
+                return static::nativeBoolToBooleanObject($leftVal == $rightVal);
+            case '!=':
+                return static::nativeBoolToBooleanObject($leftVal != $rightVal);
+
             default:
-                return static::$NULL ;
+                return static::$NULL;
         }
     }
 
