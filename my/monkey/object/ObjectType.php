@@ -38,4 +38,9 @@ class ObjectType
      * @var  string
      */
     const ERROR_OBJ = "ERROR" ;
+
+    /**
+     * @var string
+     */
+    const FUNCTION_OBJ = "FUNCTION";
 }

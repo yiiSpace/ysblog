@@ -10,7 +10,10 @@ namespace monkey\evaluator;
 
 
 use monkey\ast\BlockStatement;
+use monkey\ast\CallExpression;
+use monkey\ast\Expression;
 use monkey\ast\ExpressionStatement;
+use monkey\ast\FunctionLiteral;
 use monkey\ast\Identifier;
 use monkey\ast\IfExpression;
 use monkey\ast\InfixExpression;
@@ -24,12 +27,12 @@ use monkey\ast\Statement;
 use monkey\object\Boolean;
 use monkey\object\Environment;
 use monkey\object\Error;
+use monkey\object\Func;
 use monkey\object\Integer;
 use monkey\object\Nil;
 use monkey\object\Object;
 use monkey\object\ObjectType;
 use monkey\object\ReturnValue;
-use Symfony\Component\ExpressionLanguage\Tests\Node\Obj;
 
 //use monkey\object\Object;
 
@@ -129,8 +132,91 @@ class Evaluator
 
             case $node instanceof Identifier:
                 return static::evalIdentifier($node, $env);
+
+            case $node instanceof FunctionLiteral:
+                $params = $node->Parameters ;
+                $body  = $node->Body ;
+                return Func::CreateWith([
+                   'Parameters'=>$params ,
+                   'Env'=>$env,
+                    'Body'=>$body ,
+                ]);
+            case $node instanceof CallExpression:
+                $function = static::DoEval($node->Function, $env);
+                if (static::isError($function)) {
+                    return $function;
+                }
+                $args = static::evalExpressions($node->Arguments, $env);
+                if (count($args) == 1 && static::isError($args[0])) {
+                    return $args[0];
+                }
+                return static::applyFunction($function, $args);
         }
         return null;
+    }
+
+    /**
+     * @param  Object $fn
+     * @param  Object[] $args
+     * @return Object
+     */
+    protected static function applyFunction($fn, $args) // :Object
+    {
+        $function = $fn;
+        if (!$function instanceof Func) {
+            return static::newError("not a function: %s", $fn->Type());
+        }
+        $extendedEnv = static::extendFunctionEnv($function, $args);
+        $evaluated = static::DoEval($function->Body, $extendedEnv);
+        return static::unwrapReturnValue($evaluated);
+    }
+
+    /**
+     * @param Func $fn
+     * @param Object[] $args
+     * @return Environment
+     */
+    protected static function extendFunctionEnv($fn,$args):Environment
+    {
+        $env = Environment::NewEnclosedEnvironment($fn->Env);
+
+        foreach ($fn->Parameters as $paramIdx => $param){
+            $env->Set($param->Value,$args[$paramIdx]) ;
+        }
+        return $env ;
+    }
+
+    /**
+     * @param Object $obj
+     * @return Object
+     */
+    protected static function unwrapReturnValue($obj) // :Object
+    {
+        if($obj instanceof  ReturnValue){
+            return $obj->Value ;
+        }
+        return $obj ;
+    }
+
+    /**
+     * @param array|Expression[] $exps
+     * @param Environment $env
+     * @return \monkey\object\Object[]
+     */
+    protected static function evalExpressions(
+        array $exps,
+        Environment $env
+    )// :array
+    {
+        $result = [];
+        foreach ($exps as $_ => $exp) {
+            $evaluated = static::DoEval($exp, $env);
+            if (static::isError($evaluated)) {
+                return [$evaluated];
+            }
+            $result[] = $evaluated;
+        }
+        return $result;
     }
 
     /**

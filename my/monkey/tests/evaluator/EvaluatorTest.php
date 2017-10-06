@@ -13,6 +13,7 @@ use monkey\evaluator\Evaluator;
 use monkey\object\Boolean;
 use monkey\object\Environment;
 use monkey\object\Error;
+use monkey\object\Func;
 use monkey\object\Integer;
 use monkey\object\Object;
 use monkey\parser\Parser;
@@ -151,6 +152,35 @@ class EvaluatorTest extends TestCase
         }
     }
 
+    public function testFunctionObject()
+    {
+        $input = "fn(x) { x + 2; };";
+        $evaluated = $this->_testEval($input);
+        $this->assertInstanceOf(Func::class, $evaluated,
+            sprintf("object is not Function. got=%s (%s)", gettype($evaluated),var_export($evaluated,true))
+        );
+        $fn = $evaluated ;
+        // 欺骗IDE 让它给智能提示！！！
+        if($fn instanceof  Func){}
+
+        $this->assertCount(1, $fn->Parameters
+            , sprintf("function has wrong parameters. Parameters=%d",
+                count($fn->Parameters))
+        );
+
+        $this->assertEquals($fn->Parameters[0]->String(), 'x',
+            sprintf("parameter is not 'x'. got=%s",
+                var_export($fn->Parameters[0] ,true) )
+        );
+
+         $expectedBody = "(x + 2)";
+        $this->assertEquals($fn->Body->String(), $expectedBody,
+            sprintf("body is not %s. got=%s",
+                $expectedBody,
+                var_export($fn->Body->String() ,true) )
+        );
+    }
+
     /**
      * @param string $input
      * @return Object
@@ -160,9 +190,9 @@ class EvaluatorTest extends TestCase
         $l = \monkey\lexer\Lexer::NewLexer($input);
         $p = Parser::NewParser($l);
         $program = $p->ParseProgram();
-        $env = Environment::NewEnvironment() ;
+        $env = Environment::NewEnvironment();
 
-        return Evaluator::DoEval($program,$env);
+        return Evaluator::DoEval($program, $env);
     }
 
     /**
@@ -175,7 +205,7 @@ class EvaluatorTest extends TestCase
         $result = $obj;
         if (!$obj instanceof Integer) {
             $this->assertTrue(false,
-                sprintf("object is not Integer. got=%s (%s)", gettype($obj), $obj)
+                sprintf("object is not Integer. got=%s (%s)", gettype($obj), var_export($obj,true))
             );
             return false;
         }
@@ -283,8 +313,37 @@ return 1;
             ["let a = 5; let b = a; let c = a + b + 5; c;", 15],
         ];
 
+        foreach ($tests as $_ => $tt) {
+            $this->_testIntegerObject($this->_testEval($tt[0]), $tt[1]);
+        }
+    }
+
+    public function testFunctionApplication()
+    {
+        $tests = [
+            ["let identity = fn(x) { x; }; identity(5);", 5],
+            ["let identity = fn(x) { return x; }; identity(5);", 5],
+            ["let double = fn(x) { x * 2; }; double(5);", 10],
+            ["let add = fn(x, y) { x + y; }; add(5, 5);", 10],
+            ["let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20],
+            ["fn(x) { x; }(5)", 5],
+        ];
+
         foreach ($tests as $_=>$tt){
             $this->_testIntegerObject($this->_testEval($tt[0]),$tt[1]);
         }
+    }
+
+    public function testClosures()
+    {
+        $input = <<<INPUT
+let newAdder = fn(x) {
+fn(y) { x + y };
+};
+let addTwo = newAdder(2);
+addTwo(2);
+INPUT;
+          $this->_testIntegerObject($this->_testEval($input),4);
+
     }
 }

@@ -29,6 +29,18 @@ class Environment
     }
 
     /**
+     * @param Environment $out
+     * @return Environment
+     */
+    public static function NewEnclosedEnvironment($outer) // :Environment
+    {
+        $env = static::NewEnvironment() ;
+        $env->outer = $outer ;
+        return $env ;
+
+    }
+
+    /**
      *
      * @var array|\SplObjectStorage
      *          string=>Object
@@ -36,12 +48,20 @@ class Environment
     protected $store = [] ;
 
     /**
+     * 外侧环境
+     * 在闭包计算时很有用
+     *
+     * @var Environment
+     */
+    protected $outer ;
+
+    /**
      * @param string $name
      * @return bool
      */
     public function Exists($name)
     {
-        return isset($this->store[$name]) ;
+        return isset($this->store[$name]) || ( !empty($this->outer) && $this->outer->Exists($name) );
     }
     /**
      * @param string $name
@@ -50,7 +70,13 @@ class Environment
      */
     public function Get($name) // :Object
     {
-        return $this->store[$name] ;
+        if(isset($this->store[$name])){
+            return $this->store[$name] ;
+        } elseif(!empty($this->outer)){
+            return $this->outer->Get($name) ;
+        }
+        // TODO 此处是否应该是 Nil对象 ?
+        return  null ;
     }
 
     /**
@@ -58,7 +84,7 @@ class Environment
      * @param Object $val
      * @return Object
      */
-    public function Set($name='',Object $val) // :Object
+    public function Set($name='',/*Object*/ $val) // :Object
     {
         $this->store[$name] = $val ;
         return $val ;

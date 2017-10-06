@@ -105,8 +105,8 @@ IN;
             ["let foobar = y", "foobar", "y"],
         ];
 
-        foreach ($tests as $i=>$tt){
-            $input = $tt[0] ;
+        foreach ($tests as $i => $tt) {
+            $input = $tt[0];
             $l = Lexer::NewLexer($input);
             $p = Parser::NewParser($l);
 
@@ -119,17 +119,14 @@ IN;
             );
 
             $stmt = $program->Statements[0];
-            if(! $this->_testLetStatement($stmt,$tt[1])){
-                return ;
+            if (!$this->_testLetStatement($stmt, $tt[1])) {
+                return;
             }
-            $val = $stmt->Value ;
-            if(!$this->_testLiteralExpression($val,$tt[2])){
-                return ;
+            $val = $stmt->Value;
+            if (!$this->_testLiteralExpression($val, $tt[2])) {
+                return;
             }
         }
-
-
-
 
 
     }
@@ -659,6 +656,8 @@ IN;
         );
 
     }
+
+
 
     public function testFunctionLiteralParsing()
     {
